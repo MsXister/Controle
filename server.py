@@ -8,6 +8,7 @@ app = Flask(__name__)
 app.register_blueprint(cadastro_bp, url_prefix='/cadastro')
 app.register_blueprint(login_bp, url_prefix='/login')
 
+# Redirecionar para login na rota inicial
 @app.route('/')
 def home():
     return redirect(url_for('login.login'))
