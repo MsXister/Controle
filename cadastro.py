@@ -1,10 +1,10 @@
-from flask import Blueprint, request, redirect, url_for
+from flask import Blueprint, request, redirect, url_for, render_template
 import hashlib
 
 # Criação do blueprint para cadastro
 cadastro_bp = Blueprint('cadastro', __name__)
 
-# Simular um banco de dados simples
+# Simulação de um banco de dados simples
 usuarios = {}
 
 @cadastro_bp.route('/', methods=['GET', 'POST'])
@@ -23,10 +23,5 @@ def cadastro():
         usuarios[username] = hashed_password
         return redirect(url_for('login.login'))
 
-    return '''
-        <form method="post">
-            Usuário: <input type="text" name="username"><br>
-            Senha: <input type="password" name="password"><br>
-            <input type="submit" value="Cadastrar">
-        </form>
-    '''
+    # Renderiza o formulário de cadastro
+    return render_template('cadastro.html')
