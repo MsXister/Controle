@@ -1,6 +1,7 @@
 from flask import Flask, redirect, url_for, session, render_template
 from cadastro import cadastro_bp
 from login import login_bp
+import sqlite3
 
 app = Flask(__name__)
 
@@ -16,13 +17,6 @@ app.register_blueprint(login_bp, url_prefix='/login')
 def home():
     if 'username' in session:  # Verifica se o usuário está logado
         return redirect(url_for('dashboard'))  # Redireciona para o dashboard
-    return redirect(url_for('login.login'))  # Redireciona para login se não estiver logado
-
-# Rota do dashboard: exibe informações do usuário logado
-@app.route('/dashboard')
-def dashboard():
-    if 'username' in session:  # Verifica se o usuário está logado
-        return render_template('dashboard.html', username=session['username'])  # Renderiza o dashboard
     return redirect(url_for('login.login'))  # Redireciona para login se não estiver logado
   
 @app.route('/configuracao', methods=['GET'])
@@ -49,19 +43,27 @@ def dashboard():
         conn = sqlite3.connect('usuarios.db')
         cursor = conn.cursor()
 
-        # Obter o ID do usuário logado
+        # Busca o ID do usuário logado no banco de dados
         cursor.execute('SELECT id FROM usuarios WHERE username = ?', (session['username'],))
-        usuario_id = cursor.fetchone()[0]
+        resultado = cursor.fetchone()
 
-        # Buscar dados relacionados (ex: gastos)
-        cursor.execute('SELECT descricao, valor, data FROM gastos WHERE usuario_id = ?', (usuario_id,))
-        gastos = cursor.fetchall()
+        if resultado:
+            usuario_id = resultado[0]
+
+            # Busca os gastos associados ao usuário
+            cursor.execute('SELECT descricao, valor, data FROM gastos WHERE usuario_id = ?', (usuario_id,))
+            gastos = cursor.fetchall()
+        else:
+            # Se o usuário não for encontrado no banco
+            gastos = []
+            return "Usuário não encontrado no banco de dados.", 404
 
         conn.close()
 
         return render_template('dashboard.html', username=session['username'], gastos=gastos)
 
     return redirect(url_for('login.login'))
+
 
 
 if __name__ == '__main__':

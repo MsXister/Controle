@@ -1,7 +1,7 @@
 import sqlite3
 
 def init_db():
-    conn = sqlite3.connect('usuarios.db')  # Cria o arquivo do banco de dados
+    conn = sqlite3.connect('usuarios.db')  # Cria ou conecta ao banco de dados
     cursor = conn.cursor()
 
     # Criação da tabela de usuários
@@ -14,26 +14,14 @@ def init_db():
         )
     ''')
 
-    # Criação da tabela de gastos (exemplo de tabela relacionada)
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS gastos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            descricao TEXT NOT NULL,
-            valor REAL NOT NULL,
-            data TEXT NOT NULL,
-            usuario_id INTEGER NOT NULL,
-            FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-        )
-    ''')
-
-    # Adicionar usuário admin padrão
+    # Adicionar um usuário admin padrão (opcional)
     cursor.execute('''
         INSERT OR IGNORE INTO usuarios (username, password, is_admin)
         VALUES ('admin', 'admin123', 1)
-    ''')  # Alterar a senha do admin conforme necessário
+    ''')
 
     conn.commit()
     conn.close()
 
-# Inicializa o banco de dados ao importar o módulo
+# Chama a função para garantir que o banco está inicializado
 init_db()

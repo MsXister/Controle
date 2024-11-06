@@ -1,29 +1,33 @@
 from flask import Blueprint, request, redirect, url_for, render_template, session
-import hashlib  # Para criptografar as senhas
+import hashlib
+import sqlite3
 
 login_bp = Blueprint('login', __name__)
 
-from cadastro import usuarios  # Importa o dicionário de usuários do módulo cadastro
-
-# Rota de login
 @login_bp.route('/', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':  # Processa o formulário de login
-        username = request.form['username']  # Obtém o nome de usuário
-        password = request.form['password']  # Obtém a senha
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()  # Criptografa a senha
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
 
-        # Verifica se o usuário e a senha estão corretos
-        if username in usuarios and usuarios[username] == hashed_password:
-            session['username'] = username  # Armazena o usuário na sessão
-            return redirect(url_for('dashboard'))  # Redireciona para o dashboard
+        # Conectar ao banco de dados e verificar as credenciais
+        conn = sqlite3.connect('usuarios.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM usuarios WHERE username = ? AND password = ?', (username, hashed_password))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
+            session['username'] = username
+            session['is_admin'] = user[3]  # Verifica se o usuário é admin
+            return redirect(url_for('dashboard'))
         else:
-            return "Usuário ou senha incorretos!"  # Mensagem de erro se as credenciais forem inválidas
+            return "Usuário ou senha incorretos!"
 
-    return render_template('login.html')  # Renderiza a página de login
+    return render_template('login.html')
 
-# Rota de logout
 @login_bp.route('/logout')
 def logout():
-    session.pop('username', None)  # Remove o usuário da sessão
-    return redirect(url_for('login.login'))  # Redireciona para a página de login
+    session.clear()
+    return redirect(url_for('login.login'))
