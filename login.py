@@ -1,4 +1,4 @@
-from flask import Blueprint, request, redirect, url_for, render_template, session
+from flask import Blueprint, request, redirect, url_for, render_template, session, flash
 import hashlib
 import sqlite3
 
@@ -19,9 +19,14 @@ def login():
 
         if user:
             session['username'] = username
-            session['is_admin'] = user[3]
+            session['is_admin'] = user[3]  # Verifica se é admin
             return redirect(url_for('dashboard'))
         else:
-            return "Usuário ou senha incorretos!"
+            flash("Usuário ou senha incorretos!", "error")  # Adiciona a mensagem de erro ao flash
 
     return render_template('login.html')
+
+@login_bp.route('/logout')
+def logout():
+    session.clear()  # Limpa toda a sessão
+    return redirect(url_for('login.login'))  # Redireciona para a página de login
