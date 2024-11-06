@@ -19,10 +19,10 @@ def login():
 
         if user:
             session['username'] = username
-            session['is_admin'] = user[3]  # Verifica se é admin
+            session['is_admin'] = user[3]  # Salva is_admin na sessão
             return redirect(url_for('dashboard'))
         else:
-            flash("Usuário ou senha incorretos!", "error")  # Adiciona a mensagem de erro ao flash
+            flash("Usuário ou senha incorretos!", "error")
 
     return render_template('login.html')
 
@@ -30,3 +30,5 @@ def login():
 def logout():
     session.clear()  # Limpa toda a sessão
     return redirect(url_for('login.login'))  # Redireciona para a página de login
+
+  

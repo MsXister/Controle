@@ -44,6 +44,18 @@ def excluir_conta():
 
     return redirect(url_for('login.login'))
 
+@app.route('/usuarios')
+def listar_usuarios():
+    if 'username' in session and session.get('is_admin'):
+        conn = sqlite3.connect('usuarios.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT id, username, is_admin FROM usuarios')
+        usuarios = cursor.fetchall()
+        conn.close()
+
+        return render_template('usuarios.html', usuarios=usuarios)
+    return redirect(url_for('login.login'))
+
 @app.route('/dashboard')
 def dashboard():
     if 'username' in session:
@@ -79,7 +91,7 @@ def dashboard():
     # Se não estiver logado, redireciona para o login
     return redirect(url_for('login.login'))
 
-
+  
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)

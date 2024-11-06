@@ -1,35 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard</title>
-</head>
-<body>
-    <h1>Bem-vindo, {{ username }}!</h1>
-    <p>Este é seu painel.</p>
+    <!-- Link do Bootstrap -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f8f9fa;
+      }
 
-    {% if is_admin %}
-        <h2>Funcionalidades de Admin</h2>
-        <p><a href="/usuarios">Ver Todos os Usuários</a></p>
-    {% endif %}
+      .dashboard-container {
+        max-width: 900px;
+        margin: 50px auto;
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
 
-    <h2>Seus Gastos:</h2>
-    <table>
-        <tr>
-            <th>Descrição</th>
-            <th>Valor</th>
-            <th>Data</th>
-        </tr>
-        {% for gasto in gastos %}
-        <tr>
-            <td>{{ gasto[1] }}</td>
-            <td>{{ gasto[2] }}</td>
-            <td>{{ gasto[3] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+      h1,
+      h2 {
+        text-align: center;
+      }
 
-    <p><a href="/login/logout">Sair</a></p>
-</body>
+      table {
+        width: 100%;
+        margin-top: 20px;
+      }
+
+      .table th,
+      .table td {
+        text-align: center;
+      }
+
+      .admin-section {
+        margin-top: 30px;
+      }
+
+      .logout-btn {
+        text-align: center;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="dashboard-container">
+        <h1>Bem-vindo, {{ username }}!</h1>
+        <p class="text-center">Este é seu painel.</p>
+
+        {% if is_admin %}
+        <div class="admin-section">
+          <h2>Funcionalidades de Admin</h2>
+          <p class="text-center">
+            <a href="/usuarios" class="btn btn-outline-primary"
+              >Ver Todos os Usuários</a
+            >
+          </p>
+        </div>
+        {% endif %}
+
+        <h2>Seus Gastos:</h2>
+        <table class="table table-striped">
+          <thead class="table-dark">
+            <tr>
+              <th>Descrição</th>
+              <th>Valor</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for gasto in gastos %}
+            <tr>
+              <td>{{ gasto[1] }}</td>
+              <td>R$ {{ gasto[2] }}</td>
+              <td>{{ gasto[3] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="logout-btn">
+          <a href="/login/logout" class="btn btn-danger">Sair</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Script do Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>
