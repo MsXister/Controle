@@ -19,9 +19,9 @@ def login():
 
         if user:
             session['username'] = username
-            session['is_admin'] = user[3]  # Verifica se é admin
+            session['is_admin'] = user[3]
             return redirect(url_for('dashboard'))
         else:
             return "Usuário ou senha incorretos!"
 
-    return render_template('login.html')  # Renderiza a página de login
+    return render_template('login.html')
