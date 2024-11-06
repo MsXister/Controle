@@ -85,13 +85,9 @@ def dashboard():
 
 @app.route('/alterar_senha', methods=['GET', 'POST'])
 def alterar_senha():
-    # Verificar se o usuário está logado
-    if 'username' not in session:
-        flash('Você precisa estar logado para acessar esta página.', 'warning')
-        return redirect(url_for('login.login'))
-
     if request.method == 'POST':
-        senha_atual = request.form['senha_atual']
+        username = request.form.get('username')  # Obter nome de usuário no caso de não estar logado
+        senha_atual = request.form.get('senha_atual')  # Opcional se estiver logado
         nova_senha = request.form['nova_senha']
         confirmar_senha = request.form['confirmar_senha']
 
@@ -106,30 +102,44 @@ def alterar_senha():
             flash('A nova senha deve ter no mínimo 8 caracteres, incluindo letras maiúsculas, minúsculas, números e caracteres especiais.', 'warning')
             return redirect(url_for('alterar_senha'))
 
-        # Conectar ao banco e verificar a senha atual
+        # Conectar ao banco
         conn = sqlite3.connect('usuarios.db')
         cursor = conn.cursor()
-        cursor.execute('SELECT password FROM usuarios WHERE username = ?', (session['username'],))
+
+        # Se logado, verifica a senha atual
+        if 'username' in session:
+            cursor.execute('SELECT password FROM usuarios WHERE username = ?', (session['username'],))
+        else:
+            cursor.execute('SELECT password FROM usuarios WHERE username = ?', (username,))
+
         senha_banco = cursor.fetchone()
 
-        if not senha_banco or not check_password_hash(senha_banco[0], senha_atual):
-            flash('Senha atual incorreta. Tente novamente.', 'danger')
-            conn.close()
-            return redirect(url_for('alterar_senha'))
-
-        # Atualizar para a nova senha
+        # Se estiver logado, validar senha atual
+        if 'username' in session:
+            if not senha_banco or not check_password_hash(senha_banco[0], senha_atual):
+                flash('Senha atual incorreta. Tente novamente.', 'danger')
+                conn.close()
+                return redirect(url_for('alterar_senha'))
+        
+        # Atualiza nova senha no banco
         nova_senha_hash = generate_password_hash(nova_senha)
-        cursor.execute('UPDATE usuarios SET password = ? WHERE username = ?', (nova_senha_hash, session['username']))
+        cursor.execute('UPDATE usuarios SET password = ? WHERE username = ?', 
+                       (nova_senha_hash, session['username'] if 'username' in session else username))
         conn.commit()
         conn.close()
 
-        # Deslogar o usuário e exibir mensagem de sucesso
-        session.pop('username', None)
-        flash('Senha alterada com sucesso! Faça login novamente.', 'success')
-        return redirect(url_for('login.login'))
+        # Se logado, deslogar o usuário
+        if 'username' in session:
+            session.pop('username', None)
+            flash('Senha alterada com sucesso! Faça login novamente.', 'success')
+            return redirect(url_for('login.login'))
+        else:
+            flash('Senha alterada com sucesso! Por favor, faça login.', 'success')
+            return redirect(url_for('login.login'))
 
-    # Renderizar o formulário de alteração de senha
     return render_template('alterar_senha.html')
+
+
 
 
 # Rota para gerenciar usuários (apenas admins)
