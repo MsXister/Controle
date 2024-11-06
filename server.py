@@ -143,15 +143,39 @@ def gerenciar_usuarios():
         conn.close()
         return render_template('gerenciar_usuarios.html', usuarios=usuarios)
     return redirect(url_for('dashboard'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        # Exibe a senha inserida no terminal
+        print(f"Senha inserida para {username}: {password}")
+
+        # Continue com a lógica de validação...
+
   
-@app.route('/login/logout')
+@app.route('/login/logout', endpoint='logout')
 def logout():
     # Remove a sessão do usuário
     session.pop('username', None)
-    session.pop('is_admin', None)  # Remove também qualquer outra chave da sessão
+    session.pop('is_admin', None)  # Remove também o status de admin
     flash('Você saiu da sua conta com sucesso.', 'success')
     return redirect(url_for('login.login'))
 
+def exibir_senha(username):
+    conn = sqlite3.connect('usuarios.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT password FROM usuarios WHERE username = ?', (username,))
+    senha = cursor.fetchone()
+    conn.close()
+    
+    if senha:
+        print(f"Senha armazenada para {username}: {senha[0]}")
+    else:
+        print(f"Usuário {username} não encontrado.")
+exibir_senha('fabio.andrades')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)
