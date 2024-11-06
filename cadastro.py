@@ -44,3 +44,5 @@ def cadastro():
 
     # Sempre retorna a página de cadastro para requisições GET
     return render_template('cadastro.html')
+  
+
