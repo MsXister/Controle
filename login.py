@@ -11,7 +11,6 @@ def login():
         password = request.form['password']
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
 
-        # Conectar ao banco de dados e verificar as credenciais
         conn = sqlite3.connect('usuarios.db')
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM usuarios WHERE username = ? AND password = ?', (username, hashed_password))
@@ -20,14 +19,9 @@ def login():
 
         if user:
             session['username'] = username
-            session['is_admin'] = user[3]  # Verifica se o usuário é admin
+            session['is_admin'] = user[3]  # Verifica se é admin
             return redirect(url_for('dashboard'))
         else:
             return "Usuário ou senha incorretos!"
 
-    return render_template('login.html')
-
-@login_bp.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('login.login'))
+    return render_template('login.html')  # Renderiza a página de login

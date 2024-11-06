@@ -16,8 +16,9 @@ app.register_blueprint(login_bp, url_prefix='/login')
 @app.route('/')
 def home():
     if 'username' in session:  # Verifica se o usuário está logado
-        return redirect(url_for('dashboard'))  # Redireciona para o dashboard
+        return redirect(url_for('dashboard'))  # Redireciona para o dashboard se logado
     return redirect(url_for('login.login'))  # Redireciona para login se não estiver logado
+
   
 @app.route('/configuracao', methods=['GET'])
 def configuracao():
@@ -30,16 +31,22 @@ def configuracao():
 def excluir_conta():
     if 'username' in session:
         username = session['username']  # Obtém o usuário logado
-        # Remove o usuário do "banco de dados" (no caso, o dicionário)
-        if username in usuarios:
-            del usuarios[username]
+
+        # Conecta ao banco e remove o usuário
+        conn = sqlite3.connect('usuarios.db')
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM usuarios WHERE username = ?', (username,))
+        conn.commit()
+        conn.close()
+
         session.pop('username', None)  # Limpa a sessão
         return "Conta excluída com sucesso! <a href='/login'>Voltar ao Login</a>"
+
     return redirect(url_for('login.login'))
-  
+
 @app.route('/dashboard')
 def dashboard():
-    if 'username' in session:
+    if 'username' in session:  # Verifica se o usuário está logado
         conn = sqlite3.connect('usuarios.db')
         cursor = conn.cursor()
 
@@ -54,14 +61,13 @@ def dashboard():
             cursor.execute('SELECT descricao, valor, data FROM gastos WHERE usuario_id = ?', (usuario_id,))
             gastos = cursor.fetchall()
         else:
-            # Se o usuário não for encontrado no banco
             gastos = []
-            return "Usuário não encontrado no banco de dados.", 404
 
         conn.close()
 
         return render_template('dashboard.html', username=session['username'], gastos=gastos)
 
+    # Se não estiver logado, redireciona para o login
     return redirect(url_for('login.login'))
 
 
