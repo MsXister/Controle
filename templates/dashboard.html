@@ -1,97 +1,119 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard</title>
-    <!-- Link do Bootstrap -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Gastos</title>
+    <!-- Bootstrap e Google Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-      body {
-        background-color: #f8f9fa;
-      }
-
-      .dashboard-container {
-        max-width: 900px;
-        margin: 50px auto;
-        background-color: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      }
-
-      h1,
-      h2 {
-        text-align: center;
-      }
-
-      table {
-        width: 100%;
-        margin-top: 20px;
-      }
-
-      .table th,
-      .table td {
-        text-align: center;
-      }
-
-      .admin-section {
-        margin-top: 30px;
-      }
-
-      .logout-btn {
-        text-align: center;
-        margin-top: 20px;
-      }
+        body {
+            background-color: #f1f5f9;
+            font-family: 'Roboto', sans-serif;
+        }
+        .navbar {
+            margin-bottom: 20px;
+        }
+        .card {
+            transition: transform 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .card-title {
+            font-weight: 600;
+        }
+        .content-section {
+            margin-top: 30px;
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
+    <!-- Navbar Superior -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Controle de Gastos</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/gastos">Controle de Gastos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/configuracoes">Configurações</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login/logout">Sair</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
     <div class="container">
-      <div class="dashboard-container">
-        <h1>Bem-vindo, {{ username }}!</h1>
-        <p class="text-center">Este é seu painel.</p>
+        <h1 class="text-center">Bem-vindo, {{ username }}!</h1>
+        <p class="text-center">Gerencie seus gastos de forma eficiente.</p>
+
+        <div class="row content-section">
+            <!-- Card Resumo de Gastos -->
+            <div class="col-md-4">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Resumo de Gastos</h5>
+                        <p class="card-text">Acesse um resumo rápido dos seus gastos mensais.</p>
+                        <a href="/gastos/resumo" class="btn btn-light">Ver Resumo</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Adicionar Gastos -->
+            <div class="col-md-4">
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Adicionar Gastos</h5>
+                        <p class="card-text">Adicione novos gastos e mantenha seu controle atualizado.</p>
+                        <a href="/gastos/adicionar" class="btn btn-light">Adicionar</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Configurações -->
+            <div class="col-md-4">
+                <div class="card text-white bg-warning mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Configurações</h5>
+                        <p class="card-text">Gerencie suas preferências e informações da conta.</p>
+                        <a href="/configuracoes" class="btn btn-light">Acessar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         {% if is_admin %}
-        <div class="admin-section">
-          <h2>Funcionalidades de Admin</h2>
-          <p class="text-center">
-            <a href="/usuarios" class="btn btn-outline-primary"
-              >Ver Todos os Usuários</a
-            >
-          </p>
+        <!-- Seção Exclusiva para Admins -->
+        <div class="row content-section">
+            <div class="col-md-12">
+                <div class="card text-white bg-danger mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Administração</h5>
+                        <p class="card-text">Visualize e gerencie todos os usuários cadastrados no sistema.</p>
+                        <a href="/usuarios" class="btn btn-light">Gerenciar Usuários</a>
+                    </div>
+                </div>
+            </div>
         </div>
         {% endif %}
-
-        <h2>Seus Gastos:</h2>
-        <table class="table table-striped">
-          <thead class="table-dark">
-            <tr>
-              <th>Descrição</th>
-              <th>Valor</th>
-              <th>Data</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for gasto in gastos %}
-            <tr>
-              <td>{{ gasto[1] }}</td>
-              <td>R$ {{ gasto[2] }}</td>
-              <td>{{ gasto[3] }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-
-        <div class="logout-btn">
-          <a href="/login/logout" class="btn btn-danger">Sair</a>
-        </div>
-      </div>
     </div>
 
-    <!-- Script do Bootstrap -->
+    <!-- Scripts do Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+</body>
 </html>

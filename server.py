@@ -62,29 +62,21 @@ def dashboard():
         conn = sqlite3.connect('usuarios.db')
         cursor = conn.cursor()
 
-        # Busca o usuário logado
-        cursor.execute('SELECT id, is_admin FROM usuarios WHERE username = ?', (session['username'],))
+        cursor.execute('SELECT id FROM usuarios WHERE username = ?', (session['username'],))
         resultado = cursor.fetchone()
 
         if resultado:
             usuario_id = resultado[0]
-            is_admin = resultado[1]
 
-            # Mostra todos os gastos apenas para admins
-            if is_admin:
-                cursor.execute('SELECT * FROM gastos')
-            else:
-                cursor.execute('SELECT descricao, valor, data FROM gastos WHERE usuario_id = ?', (usuario_id,))
-            
+            # Formata os valores dos gastos para duas casas decimais
+            cursor.execute('SELECT descricao, ROUND(valor, 2), data FROM gastos WHERE usuario_id = ?', (usuario_id,))
             gastos = cursor.fetchall()
         else:
             gastos = []
-            return "Usuário não encontrado.", 404
 
         conn.close()
-
-        return render_template('dashboard.html', username=session['username'], gastos=gastos, is_admin=is_admin)
-
+        return render_template('dashboard.html', username=session['username'], gastos=gastos)
+    
     return redirect(url_for('login.login'))
 
 
