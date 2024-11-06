@@ -19,7 +19,7 @@ def home():
         return redirect(url_for('dashboard'))  # Redireciona para o dashboard se logado
     return redirect(url_for('login.login'))  # Redireciona para login se não estiver logado
 
-  
+# Rota para excluir conta
 @app.route('/configuracao/excluir', methods=['POST'])
 def excluir_conta():
     if 'username' in session:
@@ -37,6 +37,7 @@ def excluir_conta():
 
     return redirect(url_for('login.login'))
 
+# Rota para listar todos os usuários (apenas para admins)
 @app.route('/usuarios')
 def listar_usuarios():
     if 'username' in session and session.get('is_admin'):
@@ -49,29 +50,34 @@ def listar_usuarios():
         return render_template('usuarios.html', usuarios=usuarios)
     return redirect(url_for('login.login'))
 
+# Rota para o dashboard
 @app.route('/dashboard')
 def dashboard():
     if 'username' in session:
         conn = sqlite3.connect('usuarios.db')
         cursor = conn.cursor()
 
-        cursor.execute('SELECT id FROM usuarios WHERE username = ?', (session['username'],))
+        # Verifica se o usuário está no banco e obtém o id e is_admin
+        cursor.execute('SELECT id, is_admin FROM usuarios WHERE username = ?', (session['username'],))
         resultado = cursor.fetchone()
 
         if resultado:
-            usuario_id = resultado[0]
+            usuario_id, is_admin = resultado
 
-            # Formata os valores dos gastos para duas casas decimais
+            # Busca os gastos do usuário e formata valores
             cursor.execute('SELECT descricao, ROUND(valor, 2), data FROM gastos WHERE usuario_id = ?', (usuario_id,))
             gastos = cursor.fetchall()
         else:
             gastos = []
+            is_admin = False
 
         conn.close()
-        return render_template('dashboard.html', username=session['username'], gastos=gastos)
-    
-    return redirect(url_for('login.login'))
 
+        # Renderiza o dashboard com as informações do usuário
+        return render_template('dashboard.html', 
+                               username=session['username'], 
+                               gastos=gastos, 
+                               is_admin=is_admin)
 
     # Se não estiver logado, redireciona para o login
     return redirect(url_for('login.login'))
@@ -88,23 +94,28 @@ def alterar_senha():
             return redirect(url_for('alterar_senha'))
 
         # Validar senha atual e atualizar no banco de dados
-        # Substituir 'session['username']' pelo usuário logado
         conn = sqlite3.connect('usuarios.db')
         cursor = conn.cursor()
         cursor.execute('SELECT password FROM usuarios WHERE username = ?', (session['username'],))
         senha_banco = cursor.fetchone()[0]
-        if senha_banco != senha_atual:  # Ajustar lógica para hash
+
+        if senha_banco != senha_atual:
             flash('Senha atual incorreta.', 'error')
             return redirect(url_for('alterar_senha'))
 
-        # Atualiza a nova senha (criptografada)
+        # Atualiza a nova senha
         cursor.execute('UPDATE usuarios SET password = ? WHERE username = ?', (nova_senha, session['username']))
         conn.commit()
         conn.close()
+
         flash('Senha alterada com sucesso!', 'success')
         return redirect(url_for('dashboard'))
+
+    # Renderiza o formulário de alteração de senha
     return render_template('alterar_senha.html')
 
+
+# Rota para gerenciar usuários (apenas admins)
 @app.route('/gerenciar_usuarios')
 def gerenciar_usuarios():
     if 'is_admin' in session and session['is_admin']:
@@ -115,8 +126,6 @@ def gerenciar_usuarios():
         conn.close()
         return render_template('gerenciar_usuarios.html', usuarios=usuarios)
     return redirect(url_for('dashboard'))
-
-  
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)

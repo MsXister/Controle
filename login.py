@@ -1,7 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-import sqlite3  # Para lidar com o banco de dados SQLite
-import hashlib
-
+import sqlite3
 
 login_bp = Blueprint('login', __name__)
 
@@ -10,26 +8,18 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
 
         conn = sqlite3.connect('usuarios.db')
         cursor = conn.cursor()
-        cursor.execute('SELECT * FROM usuarios WHERE username = ? AND password = ?', (username, hashed_password))
+        cursor.execute('SELECT * FROM usuarios WHERE username = ? AND password = ?', (username, password))
         user = cursor.fetchone()
         conn.close()
 
         if user:
-            session['username'] = username
-            session['is_admin'] = user[3]  # Salva is_admin na sessão
+            session['username'] = user[1]
+            session['is_admin'] = user[3]  # user[3] deve ser o campo is_admin no banco
             return redirect(url_for('dashboard'))
         else:
-            flash("Usuário ou senha incorretos!", "error")
-
+            flash('Usuário ou senha inválidos.', 'error')
+    
     return render_template('login.html')
-
-@login_bp.route('/logout')
-def logout():
-    session.clear()  # Limpa toda a sessão
-    return redirect(url_for('login.login'))  # Redireciona para a página de login
-
-  

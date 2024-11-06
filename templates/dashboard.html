@@ -78,19 +78,20 @@
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li>
-                  <a class="dropdown-item" href="/configuracoes/alterar_senha"
-                    >Alterar Senha</a
-                  >
+                  <a href="/alterar_senha">Alterar Senha</a>
                 </li>
                 {% if is_admin %}
-                <li>
-                  <a
-                    class="dropdown-item"
-                    href="/configuracoes/gerenciar_usuarios"
-                    >Gerenciar Usuários</a
-                  >
-                </li>
+                <div class="col-md-12">
+                  <div class="card text-white bg-danger mb-3">
+                    <div class="card-body text-center">
+                      <h5 class="card-title">Administração</h5>
+                      <p class="card-text">Gerencie os usuários cadastrados.</p>
+                      <a href="/gerenciar_usuarios">Gerenciar Usuários</a>
+                    </div>
+                  </div>
+                </div>
                 {% endif %}
+
                 <li><hr class="dropdown-divider" /></li>
                 <li><a class="dropdown-item" href="/login/logout">Sair</a></li>
               </ul>
