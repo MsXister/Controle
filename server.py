@@ -46,26 +46,35 @@ def excluir_conta():
 
 @app.route('/dashboard')
 def dashboard():
-    if 'username' in session:  # Verifica se o usuário está logado
+    if 'username' in session:
         conn = sqlite3.connect('usuarios.db')
         cursor = conn.cursor()
 
-        # Busca o ID do usuário logado no banco de dados
-        cursor.execute('SELECT id FROM usuarios WHERE username = ?', (session['username'],))
+        # Busca o usuário logado
+        cursor.execute('SELECT id, is_admin FROM usuarios WHERE username = ?', (session['username'],))
         resultado = cursor.fetchone()
 
         if resultado:
             usuario_id = resultado[0]
+            is_admin = resultado[1]
 
-            # Busca os gastos associados ao usuário
-            cursor.execute('SELECT descricao, valor, data FROM gastos WHERE usuario_id = ?', (usuario_id,))
+            # Mostra todos os gastos apenas para admins
+            if is_admin:
+                cursor.execute('SELECT * FROM gastos')
+            else:
+                cursor.execute('SELECT descricao, valor, data FROM gastos WHERE usuario_id = ?', (usuario_id,))
+            
             gastos = cursor.fetchall()
         else:
             gastos = []
+            return "Usuário não encontrado.", 404
 
         conn.close()
 
-        return render_template('dashboard.html', username=session['username'], gastos=gastos)
+        return render_template('dashboard.html', username=session['username'], gastos=gastos, is_admin=is_admin)
+
+    return redirect(url_for('login.login'))
+
 
     # Se não estiver logado, redireciona para o login
     return redirect(url_for('login.login'))

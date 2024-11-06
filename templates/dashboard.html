@@ -7,6 +7,12 @@
 </head>
 <body>
     <h1>Bem-vindo, {{ username }}!</h1>
+    <p>Este é seu painel.</p>
+
+    {% if is_admin %}
+        <h2>Funcionalidades de Admin</h2>
+        <p><a href="/usuarios">Ver Todos os Usuários</a></p>
+    {% endif %}
 
     <h2>Seus Gastos:</h2>
     <table>
@@ -17,14 +23,13 @@
         </tr>
         {% for gasto in gastos %}
         <tr>
-            <td>{{ gasto[0] }}</td>
             <td>{{ gasto[1] }}</td>
             <td>{{ gasto[2] }}</td>
+            <td>{{ gasto[3] }}</td>
         </tr>
         {% endfor %}
     </table>
 
-    <p><a href="/configuracao">Configuração da Conta</a></p>
     <p><a href="/login/logout">Sair</a></p>
 </body>
 </html>
