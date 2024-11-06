@@ -4,7 +4,7 @@ import hashlib
 # Criação do blueprint para cadastro
 cadastro_bp = Blueprint('cadastro', __name__)
 
-# Simulação de um banco de dados simples
+# Simular um banco de dados simples
 usuarios = {}
 
 @cadastro_bp.route('/', methods=['GET', 'POST'])
@@ -21,7 +21,7 @@ def cadastro():
 
         # Armazenar o usuário
         usuarios[username] = hashed_password
-        return redirect(url_for('login.login'))
+        return redirect(url_for('login.login'))  # Redirecionar para login após cadastro
 
     # Renderiza o formulário de cadastro
     return render_template('cadastro.html')

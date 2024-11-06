@@ -4,11 +4,10 @@ from login import login_bp
 
 app = Flask(__name__)
 
-# Registrar os blueprints (módulos separados)
+# Registrar os blueprints
 app.register_blueprint(cadastro_bp, url_prefix='/cadastro')
 app.register_blueprint(login_bp, url_prefix='/login')
 
-# Rota inicial redireciona para a página de login
 @app.route('/')
 def home():
     return redirect(url_for('login.login'))
