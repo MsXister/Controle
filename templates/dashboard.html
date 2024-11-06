@@ -12,21 +12,33 @@
             background-color: #f1f5f9;
             font-family: 'Roboto', sans-serif;
         }
+
         .navbar {
             margin-bottom: 20px;
         }
+
         .card {
             transition: transform 0.2s ease;
         }
+
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-        .card-title {
-            font-weight: 600;
+
+        .content-header {
+            text-align: center;
+            margin-top: 20px;
         }
-        .content-section {
+
+        .section-title {
             margin-top: 30px;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            text-align: center;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -40,17 +52,18 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/dashboard">Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/gastos">Controle de Gastos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/configuracoes">Configurações</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/login/logout">Sair</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Configurações
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/configuracoes">Alterar Senha</a></li>
+                            {% if is_admin %}
+                            <li><a class="dropdown-item" href="/usuarios">Gerenciar Usuários</a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/login/logout">Sair</a></li>
+                        </ul>
                     </li>
                 </ul>
             </div>
@@ -59,58 +72,48 @@
 
     <!-- Conteúdo Principal -->
     <div class="container">
-        <h1 class="text-center">Bem-vindo, {{ username }}!</h1>
-        <p class="text-center">Gerencie seus gastos de forma eficiente.</p>
+        <div class="content-header">
+            <h1>Bem-vindo, {{ username }}!</h1>
+            <p>Gerencie seus gastos e acompanhe seu progresso financeiro.</p>
+        </div>
 
-        <div class="row content-section">
-            <!-- Card Resumo de Gastos -->
-            <div class="col-md-4">
+        <!-- Controle de Gastos -->
+        <h2 class="section-title">Controle de Gastos</h2>
+        <div class="row mt-4">
+            <div class="col-md-6">
                 <div class="card text-white bg-primary mb-3">
-                    <div class="card-body">
+                    <div class="card-body text-center">
                         <h5 class="card-title">Resumo de Gastos</h5>
-                        <p class="card-text">Acesse um resumo rápido dos seus gastos mensais.</p>
-                        <a href="/gastos/resumo" class="btn btn-light">Ver Resumo</a>
+                        <p class="card-text">Visualize rapidamente seus gastos mensais.</p>
+                        <a href="/gastos/resumo" class="btn btn-light btn-sm">Ver Resumo</a>
                     </div>
                 </div>
             </div>
 
-            <!-- Card Adicionar Gastos -->
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <div class="card text-white bg-success mb-3">
-                    <div class="card-body">
+                    <div class="card-body text-center">
                         <h5 class="card-title">Adicionar Gastos</h5>
-                        <p class="card-text">Adicione novos gastos e mantenha seu controle atualizado.</p>
-                        <a href="/gastos/adicionar" class="btn btn-light">Adicionar</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card Configurações -->
-            <div class="col-md-4">
-                <div class="card text-white bg-warning mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Configurações</h5>
-                        <p class="card-text">Gerencie suas preferências e informações da conta.</p>
-                        <a href="/configuracoes" class="btn btn-light">Acessar</a>
+                        <p class="card-text">Registre novos gastos rapidamente.</p>
+                        <a href="/gastos/adicionar" class="btn btn-light btn-sm">Adicionar</a>
                     </div>
                 </div>
             </div>
         </div>
 
-        {% if is_admin %}
-        <!-- Seção Exclusiva para Admins -->
-        <div class="row content-section">
+        <!-- Resumo (Planejado para futuro) -->
+        <h2 class="section-title">Resumo</h2>
+        <div class="row mt-4">
             <div class="col-md-12">
-                <div class="card text-white bg-danger mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Administração</h5>
-                        <p class="card-text">Visualize e gerencie todos os usuários cadastrados no sistema.</p>
-                        <a href="/usuarios" class="btn btn-light">Gerenciar Usuários</a>
+                <div class="card bg-light mb-3">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Gráficos e Estatísticas</h5>
+                        <p class="card-text">Acompanhe o progresso de seus gastos com visualizações detalhadas.</p>
+                        <a href="#" class="btn btn-primary btn-sm">Explorar Resumo</a>
                     </div>
                 </div>
             </div>
         </div>
-        {% endif %}
     </div>
 
     <!-- Scripts do Bootstrap -->
