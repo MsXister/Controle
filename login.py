@@ -1,6 +1,7 @@
-from flask import Blueprint, request, redirect, url_for, render_template, session, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+import sqlite3  # Para lidar com o banco de dados SQLite
 import hashlib
-import sqlite3
+
 
 login_bp = Blueprint('login', __name__)
 

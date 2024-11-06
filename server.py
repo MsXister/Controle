@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, session, render_template
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from cadastro import cadastro_bp
 from login import login_bp
 import sqlite3
@@ -17,13 +17,6 @@ app.register_blueprint(login_bp, url_prefix='/login')
 def home():
     if 'username' in session:  # Verifica se o usuário está logado
         return redirect(url_for('dashboard'))  # Redireciona para o dashboard se logado
-    return redirect(url_for('login.login'))  # Redireciona para login se não estiver logado
-
-  
-@app.route('/configuracao', methods=['GET'])
-def configuracao():
-    if 'username' in session:  # Verifica se o usuário está logado
-        return render_template('configuracao.html')  # Exibe o menu de configuração
     return redirect(url_for('login.login'))  # Redireciona para login se não estiver logado
 
   
@@ -82,6 +75,46 @@ def dashboard():
 
     # Se não estiver logado, redireciona para o login
     return redirect(url_for('login.login'))
+
+@app.route('/alterar_senha', methods=['GET', 'POST'])
+def alterar_senha():
+    if request.method == 'POST':
+        senha_atual = request.form['senha_atual']
+        nova_senha = request.form['nova_senha']
+        confirmar_senha = request.form['confirmar_senha']
+
+        if nova_senha != confirmar_senha:
+            flash('As senhas não coincidem.', 'error')
+            return redirect(url_for('alterar_senha'))
+
+        # Validar senha atual e atualizar no banco de dados
+        # Substituir 'session['username']' pelo usuário logado
+        conn = sqlite3.connect('usuarios.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT password FROM usuarios WHERE username = ?', (session['username'],))
+        senha_banco = cursor.fetchone()[0]
+        if senha_banco != senha_atual:  # Ajustar lógica para hash
+            flash('Senha atual incorreta.', 'error')
+            return redirect(url_for('alterar_senha'))
+
+        # Atualiza a nova senha (criptografada)
+        cursor.execute('UPDATE usuarios SET password = ? WHERE username = ?', (nova_senha, session['username']))
+        conn.commit()
+        conn.close()
+        flash('Senha alterada com sucesso!', 'success')
+        return redirect(url_for('dashboard'))
+    return render_template('alterar_senha.html')
+
+@app.route('/gerenciar_usuarios')
+def gerenciar_usuarios():
+    if 'is_admin' in session and session['is_admin']:
+        conn = sqlite3.connect('usuarios.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM usuarios')
+        usuarios = cursor.fetchall()
+        conn.close()
+        return render_template('gerenciar_usuarios.html', usuarios=usuarios)
+    return redirect(url_for('dashboard'))
 
   
 
