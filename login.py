@@ -1,7 +1,6 @@
-from flask import Blueprint, request, render_template
+from flask import Blueprint, request, redirect, url_for, render_template, session
 import hashlib
 
-# Criação do blueprint para login
 login_bp = Blueprint('login', __name__)
 
 # Importar o dicionário de usuários do cadastro
@@ -12,14 +11,19 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-
-        # Criptografar a senha para comparação
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
 
         if username in usuarios and usuarios[username] == hashed_password:
-            return f"Login bem-sucedido! Bem-vindo, {username}."
+            # Salvar o usuário na sessão
+            session['username'] = username
+            return redirect(url_for('home'))
         else:
             return "Usuário ou senha incorretos!"
 
-    # Renderiza o formulário de login
     return render_template('login.html')
+
+@login_bp.route('/logout')
+def logout():
+    # Limpar a sessão
+    session.pop('username', None)
+    return redirect(url_for('login.login'))
