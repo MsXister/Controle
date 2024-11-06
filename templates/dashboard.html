@@ -7,11 +7,24 @@
 </head>
 <body>
     <h1>Bem-vindo, {{ username }}!</h1>
-    
-    <!-- Link para o menu de configuração -->
-    <p><a href="/configuracao">Configuração da Conta</a></p>
 
-    <!-- Link para logout -->
+    <h2>Seus Gastos:</h2>
+    <table>
+        <tr>
+            <th>Descrição</th>
+            <th>Valor</th>
+            <th>Data</th>
+        </tr>
+        {% for gasto in gastos %}
+        <tr>
+            <td>{{ gasto[0] }}</td>
+            <td>{{ gasto[1] }}</td>
+            <td>{{ gasto[2] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <p><a href="/configuracao">Configuração da Conta</a></p>
     <p><a href="/login/logout">Sair</a></p>
 </body>
 </html>
