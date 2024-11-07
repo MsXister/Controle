@@ -13,7 +13,7 @@
     <div class="container mt-5">
       <h1 class="text-center">Alterar Senha</h1>
 
-      <!-- Mensagens de feedback -->
+      <!-- Exibir mensagens de feedback -->
       {% with messages = get_flashed_messages(with_categories=true) %} {% if
       messages %} {% for category, message in messages %}
       <div
@@ -31,7 +31,7 @@
       {% endfor %} {% endif %} {% endwith %}
 
       <form method="post">
-        {% if not session.username %}
+        {% if not is_logged_in %}
         <div class="mb-3">
           <label for="username" class="form-label">Usuário</label>
           <input
@@ -42,7 +42,7 @@
             required
           />
         </div>
-        {% endif %} {% if session.username %}
+        {% endif %} {% if is_logged_in %}
         <div class="mb-3">
           <label for="senha_atual" class="form-label">Senha Atual</label>
           <input
