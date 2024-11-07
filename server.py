@@ -19,6 +19,7 @@ app.register_blueprint(gastos_bp, url_prefix='/gastos')
 app.register_blueprint(cadastro_bp, url_prefix='/cadastro')
 app.register_blueprint(login_bp, url_prefix='/login')
 
+
 # Rota principal: redireciona para o dashboard se o usuário estiver logado, caso contrário, vai para login
 @app.route('/')
 def home():
@@ -74,14 +75,25 @@ def dashboard():
         usuario_id, is_admin = resultado
 
         # Busca os últimos 5 gastos do usuário
-        cursor.execute('SELECT descricao, ROUND(valor, 2), data FROM gastos WHERE usuario_id = ? ORDER BY data DESC LIMIT 5', (usuario_id,))
+        cursor.execute('''
+            SELECT descricao, ROUND(valor, 2), data 
+            FROM gastos 
+            WHERE usuario_id = ? 
+            ORDER BY data DESC 
+            LIMIT 5
+        ''', (usuario_id,))
         gastos_recentes = cursor.fetchall()
 
-        # Resumo de gastos por categoria
-        cursor.execute('SELECT categoria, ROUND(SUM(valor), 2) FROM gastos WHERE usuario_id = ? GROUP BY categoria', (usuario_id,))
+        # Resumo de gastos por categoria para o usuário atual
+        cursor.execute('''
+            SELECT categoria, ROUND(SUM(valor), 2) 
+            FROM gastos 
+            WHERE usuario_id = ? 
+            GROUP BY categoria
+        ''', (usuario_id,))
         resumo_categorias = cursor.fetchall()
 
-        # Busca todos os gastos de todos os usuários
+        # Busca todos os gastos de todos os usuários para visualização geral
         cursor.execute('''
             SELECT g.descricao, ROUND(g.valor, 2), g.data, g.categoria, u.username
             FROM gastos g
@@ -90,6 +102,7 @@ def dashboard():
         ''')
         todos_gastos = cursor.fetchall()
     else:
+        # Caso o usuário não seja encontrado no banco
         gastos_recentes = []
         resumo_categorias = []
         todos_gastos = []
@@ -97,13 +110,14 @@ def dashboard():
 
     conn.close()
 
-    # Renderiza o dashboard com todas as informações
-    return render_template('dashboard.html', 
-                           username=session['username'], 
-                           gastos_recentes=gastos_recentes, 
-                           resumo_categorias=resumo_categorias, 
-                           todos_gastos=todos_gastos, 
+    # Renderiza o dashboard com os dados
+    return render_template('dashboard.html',
+                           username=session['username'],
+                           gastos_recentes=gastos_recentes,
+                           resumo_categorias=resumo_categorias,
+                           todos_gastos=todos_gastos,
                            is_admin=is_admin)
+
 
 
 
@@ -159,26 +173,26 @@ def alterar_senha():
 
     return render_template('alterar_senha.html', is_logged_in='username' in session)
 
-@gastos_bp.route('/todos_gastos')
+@app.route('/todos_gastos')
 def todos_gastos():
-    # Verifica se o usuário está logado
     if 'username' not in session:
+        flash('Por favor, faça login para acessar os gastos.', 'warning')
         return redirect(url_for('login.login'))
 
     conn = sqlite3.connect('usuarios.db')
     cursor = conn.cursor()
     
-    # Busca todos os gastos de todos os usuários, junto com o nome do usuário
+    # Consulta todos os gastos de todos os usuários
     cursor.execute('''
-        SELECT g.descricao, g.valor, g.data, g.categoria, u.username
+        SELECT g.descricao, ROUND(g.valor, 2), g.data, g.categoria, u.username
         FROM gastos g
         JOIN usuarios u ON g.usuario_id = u.id
         ORDER BY g.data DESC
     ''')
-    gastos = cursor.fetchall()
+    todos_gastos = cursor.fetchall()
     conn.close()
 
-    return render_template('todos_gastos.html', gastos=gastos)
+    return render_template('todos_gastos.html', todos_gastos=todos_gastos)
 
 
 
