@@ -80,19 +80,31 @@ def dashboard():
         # Resumo de gastos por categoria
         cursor.execute('SELECT categoria, ROUND(SUM(valor), 2) FROM gastos WHERE usuario_id = ? GROUP BY categoria', (usuario_id,))
         resumo_categorias = cursor.fetchall()
+
+        # Busca todos os gastos de todos os usuários
+        cursor.execute('''
+            SELECT g.descricao, ROUND(g.valor, 2), g.data, g.categoria, u.username
+            FROM gastos g
+            JOIN usuarios u ON g.usuario_id = u.id
+            ORDER BY g.data DESC
+        ''')
+        todos_gastos = cursor.fetchall()
     else:
         gastos_recentes = []
         resumo_categorias = []
+        todos_gastos = []
         is_admin = False
 
     conn.close()
 
-    # Renderiza o dashboard com as informações do usuário
+    # Renderiza o dashboard com todas as informações
     return render_template('dashboard.html', 
                            username=session['username'], 
                            gastos_recentes=gastos_recentes, 
                            resumo_categorias=resumo_categorias, 
+                           todos_gastos=todos_gastos, 
                            is_admin=is_admin)
+
 
 
     # Se não estiver logado, redireciona para o login
@@ -146,6 +158,28 @@ def alterar_senha():
         return redirect(url_for('login.login'))
 
     return render_template('alterar_senha.html', is_logged_in='username' in session)
+
+@gastos_bp.route('/todos_gastos')
+def todos_gastos():
+    # Verifica se o usuário está logado
+    if 'username' not in session:
+        return redirect(url_for('login.login'))
+
+    conn = sqlite3.connect('usuarios.db')
+    cursor = conn.cursor()
+    
+    # Busca todos os gastos de todos os usuários, junto com o nome do usuário
+    cursor.execute('''
+        SELECT g.descricao, g.valor, g.data, g.categoria, u.username
+        FROM gastos g
+        JOIN usuarios u ON g.usuario_id = u.id
+        ORDER BY g.data DESC
+    ''')
+    gastos = cursor.fetchall()
+    conn.close()
+
+    return render_template('todos_gastos.html', gastos=gastos)
+
 
 
 # Rota para gerenciar usuários (apenas admins)
