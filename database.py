@@ -37,3 +37,4 @@ def init_db():
 
 # Inicializa o banco de dados ao importar o módulo
 init_db()
+

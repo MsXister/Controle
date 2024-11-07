@@ -51,34 +51,43 @@ def listar_usuarios():
         return render_template('usuarios.html', usuarios=usuarios)
     return redirect(url_for('login.login'))
 
-# Rota para o dashboard
 @app.route('/dashboard')
 def dashboard():
-    if 'username' in session:
-        conn = sqlite3.connect('usuarios.db')
-        cursor = conn.cursor()
+    if 'username' not in session:
+        flash('Por favor, faça login para acessar o dashboard.', 'warning')
+        return redirect(url_for('login.login'))
 
-        # Verifica se o usuário está no banco e obtém o id e is_admin
-        cursor.execute('SELECT id, is_admin FROM usuarios WHERE username = ?', (session['username'],))
-        resultado = cursor.fetchone()
+    conn = sqlite3.connect('usuarios.db')
+    cursor = conn.cursor()
 
-        if resultado:
-            usuario_id, is_admin = resultado
+    # Verifica se o usuário está no banco e obtém o id e is_admin
+    cursor.execute('SELECT id, is_admin FROM usuarios WHERE username = ?', (session['username'],))
+    resultado = cursor.fetchone()
 
-            # Busca os gastos do usuário e formata valores
-            cursor.execute('SELECT descricao, ROUND(valor, 2), data FROM gastos WHERE usuario_id = ?', (usuario_id,))
-            gastos = cursor.fetchall()
-        else:
-            gastos = []
-            is_admin = False
+    if resultado:
+        usuario_id, is_admin = resultado
 
-        conn.close()
+        # Busca os últimos 5 gastos do usuário
+        cursor.execute('SELECT descricao, ROUND(valor, 2), data FROM gastos WHERE usuario_id = ? ORDER BY data DESC LIMIT 5', (usuario_id,))
+        gastos_recentes = cursor.fetchall()
 
-        # Renderiza o dashboard com as informações do usuário
-        return render_template('dashboard.html', 
-                               username=session['username'], 
-                               gastos=gastos, 
-                               is_admin=is_admin)
+        # Resumo de gastos por categoria
+        cursor.execute('SELECT categoria, ROUND(SUM(valor), 2) FROM gastos WHERE usuario_id = ? GROUP BY categoria', (usuario_id,))
+        resumo_categorias = cursor.fetchall()
+    else:
+        gastos_recentes = []
+        resumo_categorias = []
+        is_admin = False
+
+    conn.close()
+
+    # Renderiza o dashboard com as informações do usuário
+    return render_template('dashboard.html', 
+                           username=session['username'], 
+                           gastos_recentes=gastos_recentes, 
+                           resumo_categorias=resumo_categorias, 
+                           is_admin=is_admin)
+
 
     # Se não estiver logado, redireciona para o login
     return redirect(url_for('login.login'))
