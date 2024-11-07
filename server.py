@@ -3,13 +3,19 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from cadastro import cadastro_bp
 from login import login_bp
 import sqlite3
+from utils import verificar_ou_adicionar_colunas  # Importar a função
+from gastos import gastos_bp
 
 app = Flask(__name__)
 
 # Configuração de uma chave secreta para gerenciar sessões
 app.secret_key = 'sua_chave_secreta_aleatoria'
 
+# Verificar colunas no banco de dados
+verificar_ou_adicionar_colunas()
+
 # Registrar os blueprints para dividir funcionalidades de cadastro e login
+app.register_blueprint(gastos_bp, url_prefix='/gastos')
 app.register_blueprint(cadastro_bp, url_prefix='/cadastro')
 app.register_blueprint(login_bp, url_prefix='/login')
 
