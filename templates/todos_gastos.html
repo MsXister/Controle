@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f9f9f9;
+            background-color: #f8f9fa;
             font-family: "Roboto", sans-serif;
         }
 
@@ -24,16 +24,6 @@
             text-align: center;
         }
 
-        .paid-status {
-            color: green;
-            font-weight: bold;
-        }
-
-        .unpaid-status {
-            color: red;
-            font-weight: bold;
-        }
-
         .filter-container {
             margin-top: 20px;
             display: flex;
@@ -43,6 +33,25 @@
 
         .filter-container input {
             max-width: 200px;
+        }
+
+        .status-paid {
+            color: green;
+            font-weight: bold;
+        }
+
+        .status-unpaid {
+            color: red;
+            font-weight: bold;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.9rem;
+        }
+
+        .checkbox-col {
+            text-align: center;
         }
     </style>
 </head>
@@ -55,17 +64,17 @@
             <div class="filter-container">
                 <label for="mes" class="form-label">Filtrar por Mês:</label>
                 <input type="month" id="mes" name="mes" class="form-control" value="{{ mes_atual }}">
-                <button type="submit" class="btn btn-primary">Filtrar</button>
+                <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
             </div>
         </form>
 
         <!-- Tabela de Gastos -->
         <form method="post" action="/gastos/pagar">
             <div class="table-container">
-                <table class="table table-striped">
+                <table class="table table-striped table-hover">
                     <thead class="table-dark">
                         <tr>
-                            <th><input type="checkbox" id="select_all"></th>
+                            <th class="checkbox-col"><input type="checkbox" id="select_all"></th>
                             <th>Descrição</th>
                             <th>Valor (R$)</th>
                             <th>Data</th>
@@ -78,17 +87,19 @@
                     <tbody>
                         {% for gasto in todos_gastos %}
                         <tr>
-                            <td><input type="checkbox" class="select-item" name="gastos_selecionados" value="{{ gasto[5] }}"></td>
+                            <td class="checkbox-col">
+                                <input type="checkbox" class="select-item" name="gastos_selecionados" value="{{ gasto[5] }}">
+                            </td>
                             <td>{{ gasto[0] }}</td>
                             <td>{{ gasto[1] }}</td>
-                            <td>{{ gasto[2] }}</td>
+                            <td>{{ gasto[2]|strftime("%d/%m/%Y") }}</td> <!-- Exibe a data formatada -->
                             <td>{{ gasto[3] }}</td>
                             <td>{{ gasto[4] }}</td>
                             <td>
                                 {% if gasto[6] %}
-                                <span class="paid-status">Pago</span>
+                                <span class="status-paid">Pago</span>
                                 {% else %}
-                                <span class="unpaid-status">Pendente</span>
+                                <span class="status-unpaid">Pendente</span>
                                 {% endif %}
                             </td>
                             <td>
@@ -102,8 +113,7 @@
 
             <!-- Botões de Ação -->
             <div class="action-buttons">
-                <button type="submit" class="btn btn-success">Salvar Pagamentos Selecionados</button>
-                <button type="submit" name="quitar_tudo" value="1" class="btn btn-danger">Quitar Todos os Selecionados</button>
+                <button type="submit" class="btn btn-success btn-lg">Salvar Pagamentos Selecionados</button>
             </div>
         </form>
     </div>

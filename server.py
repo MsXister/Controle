@@ -5,6 +5,7 @@ from login import login_bp
 import sqlite3
 from utils import verificar_ou_adicionar_colunas  # Importar a função
 from gastos import gastos_bp
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -173,27 +174,35 @@ def alterar_senha():
 
     return render_template('alterar_senha.html', is_logged_in='username' in session)
 
-@app.route('/todos_gastos')
+@app.route('/todos_gastos', methods=['GET', 'POST'])
 def todos_gastos():
     if 'username' not in session:
         flash('Por favor, faça login para acessar os gastos.', 'warning')
         return redirect(url_for('login.login'))
 
+    mes = request.args.get('mes', datetime.now().strftime('%Y-%m'))
+    ano, mes = mes.split('-')
+
     conn = sqlite3.connect('usuarios.db')
     cursor = conn.cursor()
-    
-    # Consulta todos os gastos de todos os usuários
+
     cursor.execute('''
-        SELECT g.descricao, ROUND(g.valor, 2), g.data, g.categoria, u.username
+        SELECT g.descricao, ROUND(g.valor, 2), g.data, g.categoria, u.username, g.id, g.pago, g.valor_pago
         FROM gastos g
         JOIN usuarios u ON g.usuario_id = u.id
+        WHERE strftime('%Y', g.data) = ? AND strftime('%m', g.data) = ?
         ORDER BY g.data DESC
-    ''')
-    todos_gastos = cursor.fetchall()
+    ''', (ano, mes))
+    
+    # Formatar a data antes de enviar ao template
+    todos_gastos = [
+        (desc, valor, datetime.strptime(data, '%Y-%m-%d').strftime('%d/%m/%Y'), cat, user, id_gasto, pago, valor_pago)
+        for desc, valor, data, cat, user, id_gasto, pago, valor_pago in cursor.fetchall()
+    ]
+    
     conn.close()
 
-    return render_template('todos_gastos.html', todos_gastos=todos_gastos)
-
+    return render_template('todos_gastos.html', todos_gastos=todos_gastos, mes_atual=request.args.get('mes', datetime.now().strftime('%Y-%m')))
 
 
 # Rota para gerenciar usuários (apenas admins)
