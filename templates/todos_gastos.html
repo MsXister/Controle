@@ -186,6 +186,7 @@
       </form>
 
       <!-- Tabela de Gastos -->
+      <!-- Tabela de Gastos -->
       <form
         method="post"
         action="/gastos/pagar"
@@ -198,17 +199,16 @@
               <tr>
                 <th><input type="checkbox" id="select_all" /></th>
                 <th>Descrição</th>
-                <th>Valor Total</th>
-                <th>Valor Pago</th>
-                <th>Saldo</th>
+                <th>Valor</th>
                 <th>Data</th>
                 <th>Categoria</th>
                 <th>Status</th>
+                <th>Valor Pago</th>
+                <th>Saldo</th>
                 <th>Pagamento</th>
                 <th>Ações</th>
               </tr>
             </thead>
-
             <tbody>
               {% for gasto in todos_gastos %}
               <tr>
@@ -221,16 +221,10 @@
                   />
                 </td>
                 <td>{{ gasto[0] }}</td>
-                <td>{{ gasto[1]|formatar_valor }}</td>
-                <td id="valor_pago_{{ gasto[5] }}">
-                  {{ gasto[7]|formatar_valor }}
-                </td>
-                <td id="saldo_{{ gasto[5] }}">
-                  {{ (gasto[1] - gasto[7])|formatar_valor }}
-                </td>
+                <td>{{ (gasto[1]|float - gasto[7]|float)|formatar_valor }}</td>
                 <td>{{ gasto[2]|formatar_data }}</td>
                 <td>{{ gasto[3] }}</td>
-                <td id="status_{{ gasto[5] }}">
+                <td>
                   {% if gasto[6] %}
                   <span class="status-paid">Pago</span>
                   {% elif gasto[7] > 0 %}
@@ -239,11 +233,13 @@
                   <span class="status-unpaid">Pendente</span>
                   {% endif %}
                 </td>
+                <td>{{ gasto[7]|formatar_valor }}</td>
+                <td>{{ gasto[1] - gasto[7]|formatar_valor }}</td>
                 <td class="payment-cell">
                   <select
                     class="form-select"
                     name="tipo_pagamento_{{ gasto[5] }}"
-                    onchange="atualizarPagamento(this, {{ gasto[5] }}, {{ gasto[1] }}, {{ gasto[7] }})"
+                    onchange="atualizarPagamento(this, {{ gasto[5] }}, {{ gasto[1] }})"
                   >
                     <option value="selecionar">Selecionar</option>
                     <option value="total">Total</option>
@@ -251,27 +247,39 @@
                   </select>
                   <input
                     type="text"
-                    id="valor_input_{{ gasto[5] }}"
-                    name="valor_pago_input_{{ gasto[5] }}"
+                    id="valor_pago_{{ gasto[5] }}"
+                    name="valor_pago_{{ gasto[5] }}"
                     class="form-control"
                     placeholder="R$ 0,00"
+                    readonly
                   />
+                  <div id="error_{{ gasto[5] }}" class="error-message">
+                    Preencha o valor para pagamento parcial.
+                  </div>
                 </td>
                 <td class="action-icons">
-                  <i class="fas fa-edit text-warning" title="Editar"></i>
-                  <i
-                    class="fas fa-trash-alt text-danger"
-                    title="Excluir"
+                  <!-- Botão Editar -->
+                  <a
+                    href="{{ url_for('gastos.editar', id=gasto[5]) }}"
+                    class="btn btn-warning btn-sm"
+                  >
+                    <i class="fas fa-edit"></i> Editar
+                  </a>
+                  <!-- Botão Excluir -->
+                  <a
+                    href="{{ url_for('gastos.excluir', id=gasto[5]) }}"
+                    class="btn btn-danger btn-sm"
                     onclick="return confirm('Confirma a exclusão?');"
-                  ></i>
+                  >
+                    <i class="fas fa-trash-alt"></i> Excluir
+                  </a>
                 </td>
               </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
-
-        <!-- Botões -->
+        <!-- Botões de Ação -->
         <div class="text-center mt-3">
           <button type="submit" class="btn btn-success">Pagar</button>
           <a href="/dashboard" class="btn btn-secondary">Voltar</a>
