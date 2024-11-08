@@ -203,8 +203,8 @@ def todos_gastos():
 
     conn.close()
 
-    return render_template('todos_gastos.html', todos_gastos=todos_gastos, mes_atual=request.args.get('mes', datetime.now().strftime('%Y-%m')))
-
+    return render_template('todos_gastos.html', todos_gastos=todos_gastos, mes_atual=mes)
+  
 # Rota para gerenciar usuários (apenas admins)
 @app.route('/gerenciar_usuarios')
 def gerenciar_usuarios():
@@ -258,6 +258,14 @@ app.jinja_env.filters['formatar_data'] = formatar_data
   
 # Registrar o filtro no Jinja
 app.jinja_env.filters['formatar_data'] = formatar_data
+
+# Função para formatar valores em reais
+def formatar_valor(valor):
+    return f"R$ {valor:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+
+# Registrar o filtro no Jinja antes de qualquer rota
+app.jinja_env.filters['formatar_valor'] = formatar_valor
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)
