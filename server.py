@@ -132,6 +132,55 @@ def pagar_gastos():
     conn.close()
     flash('Pagamentos atualizados com sucesso!', 'success')
     return redirect(url_for('todos_gastos'))
+  
+@app.route('/gastos/excluir/<int:id>', methods=['GET', 'POST'])
+def excluir(id):
+    if 'username' not in session:
+        flash('Por favor, faça login para continuar.', 'warning')
+        return redirect(url_for('login.login'))
+
+    conn = sqlite3.connect('usuarios.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM gastos WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+
+    flash('Gasto excluído com sucesso!', 'success')
+    return redirect(url_for('todos_gastos'))
+
+  
+@app.route('/gastos/editar/<int:id>', methods=['GET', 'POST'])
+def editar(id):
+    if 'username' not in session:
+        flash('Por favor, faça login para continuar.', 'warning')
+        return redirect(url_for('login.login'))
+
+    conn = sqlite3.connect('usuarios.db')
+    cursor = conn.cursor()
+    
+    if request.method == 'POST':
+        descricao = request.form['descricao']
+        valor = request.form['valor']
+        data = request.form['data']
+        categoria = request.form['categoria']
+
+        cursor.execute('''
+            UPDATE gastos
+            SET descricao = ?, valor = ?, data = ?, categoria = ?
+            WHERE id = ?
+        ''', (descricao, valor, data, categoria, id))
+        conn.commit()
+        conn.close()
+
+        flash('Gasto atualizado com sucesso!', 'success')
+        return redirect(url_for('todos_gastos'))
+    
+    cursor.execute('SELECT descricao, valor, data, categoria FROM gastos WHERE id = ?', (id,))
+    gasto = cursor.fetchone()
+    conn.close()
+
+    return render_template('editar_gasto.html', gasto=gasto, id=id)
+
 
 
 if __name__ == '__main__':

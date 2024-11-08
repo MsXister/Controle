@@ -200,9 +200,7 @@
                 <th>Descrição</th>
                 <th>Valor Total</th>
                 <th>Valor Pago</th>
-                <!-- NOVO -->
                 <th>Saldo</th>
-                <!-- NOVO -->
                 <th>Data</th>
                 <th>Categoria</th>
                 <th>Status</th>
@@ -210,6 +208,7 @@
                 <th>Ações</th>
               </tr>
             </thead>
+
             <tbody>
               {% for gasto in todos_gastos %}
               <tr>
@@ -226,11 +225,9 @@
                 <td id="valor_pago_{{ gasto[5] }}">
                   {{ gasto[7]|formatar_valor }}
                 </td>
-                <!-- Novo -->
                 <td id="saldo_{{ gasto[5] }}">
                   {{ (gasto[1] - gasto[7])|formatar_valor }}
                 </td>
-                <!-- Novo -->
                 <td>{{ gasto[2]|formatar_data }}</td>
                 <td>{{ gasto[3] }}</td>
                 <td id="status_{{ gasto[5] }}">
@@ -259,9 +256,6 @@
                     class="form-control"
                     placeholder="R$ 0,00"
                   />
-                  <div id="error_{{ gasto[5] }}" class="error-message">
-                    Preencha o valor para pagamento parcial.
-                  </div>
                 </td>
                 <td class="action-icons">
                   <i class="fas fa-edit text-warning" title="Editar"></i>
