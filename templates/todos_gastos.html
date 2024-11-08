@@ -1,193 +1,367 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Todos os Gastos</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
     <style>
-        body {
-            background-color: #f4f6f9;
-            font-family: "Roboto", sans-serif;
-        }
+      body {
+        background-color: #f4f6f9;
+        font-family: "Roboto", sans-serif;
+      }
 
-        .container {
-            margin-top: 30px;
-        }
+      .container {
+        margin-top: 30px;
+      }
 
-        .table-container {
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-        }
+      .table-container {
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+      }
 
-        h1 {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #333;
-            text-align: center;
-        }
+      h1 {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #333;
+        text-align: center;
+      }
 
-        .status-paid {
-            color: #28a745;
-            font-weight: bold;
-        }
+      .status-paid {
+        color: #28a745;
+        font-weight: bold;
+      }
 
-        .status-partial {
-            color: #ffc107;
-            font-weight: bold;
-        }
+      .status-partial {
+        color: #ffc107;
+        font-weight: bold;
+      }
 
-        .status-unpaid {
-            color: #dc3545;
-            font-weight: bold;
-        }
+      .status-unpaid {
+        color: #dc3545;
+        font-weight: bold;
+      }
 
-        footer {
-            background-color: #343a40;
-            color: white;
-            padding: 10px 0;
-            text-align: center;
-            margin-top: 30px;
-            border-radius: 8px;
-        }
+      footer {
+        background-color: #343a40;
+        color: white;
+        padding: 10px 0;
+        text-align: center;
+        margin-top: 30px;
+        border-radius: 8px;
+      }
 
-        .filter-container {
-            display: flex;
-            gap: 15px;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
+      .filter-container {
+        display: flex;
+        gap: 15px;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
 
-        .filter-container .flatpickr-input {
-            max-width: 200px;
-        }
+      .filter-container .btn {
+        min-width: 150px;
+        text-align: left;
+      }
 
-        .table thead {
-            background-color: #007bff;
-            color: white;
-        }
+      .filter-container select {
+        max-width: 200px;
+      }
 
-        .table tbody tr:hover {
-            background-color: #f8f9fa;
-        }
+      .table thead {
+        background-color: #007bff;
+        color: white;
+      }
 
-        .btn-success {
-            background-color: #198754;
-            border: none;
-        }
+      .table tbody tr:hover {
+        background-color: #f8f9fa;
+      }
 
-        .error-message {
-            color: red;
-            font-size: 0.9rem;
-            margin-top: -10px;
-            display: none;
-        }
+      .payment-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .form-select {
+        max-width: 140px;
+      }
+
+      .form-control {
+        max-width: 100px;
+      }
+
+      .action-icons i {
+        cursor: pointer;
+        margin-right: 10px;
+        transition: color 0.3s ease;
+      }
+
+      .action-icons i:hover {
+        color: #0056b3;
+      }
+
+      .btn-success {
+        background-color: #198754;
+        border: none;
+      }
+
+      .error-message {
+        color: red;
+        font-size: 0.9rem;
+        margin-top: -10px;
+        display: none;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>Todos os Gastos</h1>
+      <h1>Todos os Gastos</h1>
 
-        <!-- Filtros -->
-        <form id="filtro-form" method="get" action="/todos_gastos">
-            <div class="filter-container">
-                <input type="text" id="mes" name="mes" class="form-control flatpickr-input" placeholder="Selecione o mês" readonly>
-                <select id="status" name="status" class="form-select">
-                    <option value="">Todos os Status</option>
-                    <option value="pago">Pago</option>
+      <form id="filtro-form" method="get" action="/todos_gastos">
+        <div
+          class="filter-container d-flex justify-content-between align-items-end flex-wrap gap-3"
+        >
+          <!-- Filtro de Período -->
+          <div class="filter-item">
+            <label for="periodo" class="form-label">Período:</label>
+            <select
+              id="periodo"
+              name="periodo"
+              class="form-select"
+              onchange="toggleDiaInput(this.value)"
+            >
+              <option value="mes">Mês Inteiro</option>
+              <option value="dia">Dia Específico</option>
+            </select>
+          </div>
+
+          <!-- Filtro de Mês -->
+          <div class="filter-item" id="mes-container">
+            <label for="mes" class="form-label">Mês:</label>
+            <input
+              type="month"
+              id="mes"
+              name="mes"
+              class="form-control"
+              value="{{ mes_atual }}"
+            />
+          </div>
+
+          <!-- Filtro de Dia -->
+          <div class="filter-item" id="dia-container" style="display: none">
+            <label for="dia" class="form-label">Dia:</label>
+            <input
+              type="date"
+              id="dia"
+              name="dia"
+              class="form-control"
+              value="{{ dia_atual }}"
+            />
+          </div>
+
+          <!-- Filtro de Status -->
+          <div class="filter-item">
+            <label for="status" class="form-label">Status:</label>
+            <select id="status" name="status" class="form-select">
+              <option value="">Todos</option>
+              <option value="pago">Pago</option>
+              <option value="parcial">Parcial</option>
+              <option value="pendente">Pendente</option>
+            </select>
+          </div>
+
+          <!-- Botão de Filtrar -->
+          <button type="submit" class="btn btn-primary mt-3">Filtrar</button>
+        </div>
+      </form>
+
+      <!-- Tabela de Gastos -->
+      <form
+        method="post"
+        action="/gastos/pagar"
+        id="gastos-form"
+        onsubmit="return validarPagamentos()"
+      >
+        <div class="table-container">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="select_all" /></th>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Data</th>
+                <th>Categoria</th>
+                <th>Status</th>
+                <th>Pagamento</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for gasto in todos_gastos %}
+              <tr>
+                <td>
+                  <input
+                    type="checkbox"
+                    class="select-item"
+                    name="gastos_selecionados"
+                    value="{{ gasto[5] }}"
+                  />
+                </td>
+                <td>{{ gasto[0] }}</td>
+                <td>{{ gasto[1]|formatar_valor }}</td>
+                <td>{{ gasto[2]|formatar_data }}</td>
+                <td>{{ gasto[3] }}</td>
+                <td>
+                  {% if gasto[6] %}
+                  <span class="status-paid">Pago</span>
+                  {% elif gasto[7] > 0 %}
+                  <span class="status-partial">Parcial</span>
+                  {% else %}
+                  <span class="status-unpaid">Pendente</span>
+                  {% endif %}
+                </td>
+                <td class="payment-cell">
+                  <select
+                    class="form-select"
+                    name="tipo_pagamento_{{ gasto[5] }}"
+                    onchange="atualizarPagamento(this, {{ gasto[5] }}, {{ gasto[1] }})"
+                  >
+                    <option value="selecionar">Selecionar</option>
+                    <option value="total">Total</option>
                     <option value="parcial">Parcial</option>
-                    <option value="pendente">Pendente</option>
-                </select>
-                <button type="submit" class="btn btn-primary">Filtrar</button>
-            </div>
-        </form>
+                  </select>
+                  <input
+                    type="text"
+                    id="valor_pago_{{ gasto[5] }}"
+                    name="valor_pago_{{ gasto[5] }}"
+                    class="form-control"
+                    placeholder="R$ 0,00"
+                    readonly
+                  />
+                  <div id="error_{{ gasto[5] }}" class="error-message">
+                    Preencha o valor para pagamento parcial.
+                  </div>
+                </td>
+                <td class="action-icons">
+                  <i class="fas fa-edit text-warning" title="Editar"></i>
+                  <i
+                    class="fas fa-trash-alt text-danger"
+                    title="Excluir"
+                    onclick="return confirm('Confirma a exclusão?');"
+                  ></i>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
 
-        <!-- Tabela de Gastos -->
-        <form method="post" action="/gastos/pagar">
-            <div class="table-container">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th><input type="checkbox" id="select_all"></th>
-                            <th>Descrição</th>
-                            <th>Valor</th>
-                            <th>Data</th>
-                            <th>Categoria</th>
-                            <th>Status</th>
-                            <th>Pagamento</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for gasto in todos_gastos %}
-                        <tr>
-                            <td><input type="checkbox" class="select-item" name="gastos_selecionados" value="{{ gasto[5] }}"></td>
-                            <td>{{ gasto[0] }}</td>
-                            <td>{{ gasto[1]|formatar_valor }}</td>
-                            <td>{{ gasto[2]|formatar_data }}</td>
-                            <td>{{ gasto[3] }}</td>
-                            <td>
-                                {% if gasto[6] %}
-                                <span class="status-paid">Pago</span>
-                                {% elif gasto[7] > 0 %}
-                                <span class="status-partial">Parcial</span>
-                                {% else %}
-                                <span class="status-unpaid">Pendente</span>
-                                {% endif %}
-                            </td>
-                            <td class="payment-cell">
-                                <select class="form-select" name="tipo_pagamento_{{ gasto[5] }}" onchange="atualizarPagamento(this, {{ gasto[5] }}, {{ gasto[1] }})">
-                                    <option value="selecionar">Selecionar</option>
-                                    <option value="total">Total</option>
-                                    <option value="parcial">Parcial</option>
-                                </select>
-                                <input type="text" id="valor_pago_{{ gasto[5] }}" name="valor_pago_{{ gasto[5] }}" class="form-control" placeholder="R$ 0,00" readonly>
-                                <div id="error_{{ gasto[5] }}" class="error-message">Preencha o valor para pagamento parcial.</div>
-                            </td>
-                            <td class="action-icons">
-                                <i class="fas fa-edit text-warning" title="Editar"></i>
-                                <i class="fas fa-trash-alt text-danger" title="Excluir" onclick="return confirm('Confirma a exclusão?');"></i>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="text-center mt-3">
-                <button type="submit" class="btn btn-success">Pagar</button>
-                <a href="/dashboard" class="btn btn-secondary">Voltar</a>
-            </div>
-        </form>
+        <!-- Botões -->
+        <div class="text-center mt-3">
+          <button type="submit" class="btn btn-success">Pagar</button>
+          <a href="/dashboard" class="btn btn-secondary">Voltar</a>
+        </div>
+      </form>
     </div>
 
     <footer>
-        <p>&copy; {{ year }} Controle de Gastos. Todos os direitos reservados.</p>
+      <p>&copy; {{ year }} Controle de Gastos. Todos os direitos reservados.</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
-        document.getElementById("select_all").addEventListener("click", function () {
-            const checkboxes = document.querySelectorAll(".select-item");
-            checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+      document
+        .getElementById("select_all")
+        .addEventListener("click", function () {
+          const checkboxes = document.querySelectorAll(".select-item");
+          checkboxes.forEach((checkbox) => (checkbox.checked = this.checked));
         });
 
-        flatpickr("#mes", {
-            dateFormat: "Y-m",
-            plugins: [
-                new monthSelectPlugin({
-                    shorthand: true,
-                    dateFormat: "Y-m",
-                    altFormat: "F Y"
-                })
-            ]
+      function atualizarPagamento(select, id, valorTotal) {
+        const input = document.getElementById(`valor_pago_${id}`);
+        const errorDiv = document.getElementById(`error_${id}`);
+
+        if (select.value === "total") {
+          input.value = `R$ ${valorTotal.toFixed(2).replace(".", ",")}`;
+          input.readOnly = true;
+          errorDiv.style.display = "none";
+        } else if (select.value === "parcial") {
+          input.value = "";
+          input.readOnly = false;
+          errorDiv.style.display = "none";
+          input.placeholder = "Digite o valor";
+        } else {
+          input.value = "";
+          input.readOnly = true;
+          errorDiv.style.display = "none";
+        }
+      }
+
+      function atualizarStatusFiltro(status) {
+        const statusSelecionado = document.getElementById("status-selecionado");
+        const statusInput = document.getElementById("status");
+        switch (status) {
+          case "pago":
+            statusSelecionado.innerText = "Pago";
+            statusInput.value = "pago";
+            break;
+          case "parcial":
+            statusSelecionado.innerText = "Parcial";
+            statusInput.value = "parcial";
+            break;
+          case "pendente":
+            statusSelecionado.innerText = "Pendente";
+            statusInput.value = "pendente";
+            break;
+          default:
+            statusSelecionado.innerText = "Todos";
+            statusInput.value = "";
+        }
+      }
+
+      function validarPagamentos() {
+        let isValid = true;
+
+        document.querySelectorAll(".payment-cell select").forEach((select) => {
+          const id = select.name.split("_")[2];
+          const input = document.getElementById(`valor_pago_${id}`);
+          const errorDiv = document.getElementById(`error_${id}`);
+
+          if (select.value === "parcial" && input.value.trim() === "") {
+            errorDiv.style.display = "block";
+            isValid = false;
+          }
         });
+
+        return isValid;
+      }
+      
+      function toggleDiaInput(periodo) {
+        const mesContainer = document.getElementById('mes-container');
+        const diaContainer = document.getElementById('dia-container');
+
+        if (periodo === 'dia') {
+            mesContainer.style.display = 'none';
+            diaContainer.style.display = 'block';
+        } else {
+            mesContainer.style.display = 'block';
+            diaContainer.style.display = 'none';
+        }
+    }
+      
     </script>
-</body>
+    
+         
+    
+  </body>
 </html>
