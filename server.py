@@ -250,22 +250,21 @@ def exibir_senha(username):
         print(f"Usuário {username} não encontrado.")
 exibir_senha('fabio.andrades')
 
-# Função para formatar a data
+# Filtro personalizado para formatar data
 def formatar_data(data):
-    return datetime.strptime(data, '%Y-%m-%d').strftime('%d/%m/%Y')
+    try:
+        return datetime.strptime(data, "%Y-%m-%d").strftime("%d/%m/%Y")
+    except ValueError:
+        return data  # Retorna o valor original se não for uma data válida
 
-app.jinja_env.filters['formatar_data'] = formatar_data
-  
-# Registrar o filtro no Jinja
+# Registro do filtro personalizado
 app.jinja_env.filters['formatar_data'] = formatar_data
 
-# Função para formatar valores em reais
+# Filtro para formatar valores como moeda
 def formatar_valor(valor):
-    return f"R$ {valor:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-# Registrar o filtro no Jinja antes de qualquer rota
 app.jinja_env.filters['formatar_valor'] = formatar_valor
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)

@@ -54,15 +54,20 @@
             border-radius: 8px;
         }
 
-        .filter-row {
+        .filter-container {
             display: flex;
+            gap: 15px;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            gap: 10px;
+            margin-bottom: 20px;
         }
 
-        .filter-row select {
+        .filter-container .btn {
+            min-width: 150px;
+            text-align: left;
+        }
+
+        .filter-container select {
             max-width: 200px;
         }
 
@@ -82,7 +87,7 @@
         }
 
         .form-select {
-            max-width: 120px;
+            max-width: 140px;
         }
 
         .form-control {
@@ -117,22 +122,35 @@
         <h1>Todos os Gastos</h1>
 
         <!-- Filtros -->
-        <form id="filtro-form" method="get" action="/todos_gastos" onsubmit="return validarFiltro()">
-            <div class="filter-row">
-                <input type="month" id="mes" name="mes" class="form-control" value="{{ mes_atual }}">
-                <select id="status" name="status" class="form-select">
-                    <option value="">Selecione o Status</option>
-                    <option value="pago">Pago</option>
-                    <option value="parcial">Parcial</option>
-                    <option value="pendente">Pendente</option>
-                </select>
-                <button type="submit" class="btn btn-primary">Filtrar</button>
+        <form id="filtro-form" method="get" action="/todos_gastos">
+            <div class="filter-container">
+                <div class="dropdown filter-item">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMes" data-bs-toggle="dropdown" aria-expanded="false">
+                        Mês: <span id="mes-selecionado">{{ mes_atual|formatar_data_mes }}</span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMes">
+                        <li><input type="month" id="mes" name="mes" class="form-control" value="{{ mes_atual }}"></li>
+                    </ul>
+                </div>
+
+                <div class="dropdown filter-item">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownStatus" data-bs-toggle="dropdown" aria-expanded="false">
+                        Status: <span id="status-selecionado">Todos</span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownStatus">
+                        <li><a class="dropdown-item" href="#" onclick="atualizarStatusFiltro('')">Todos</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="atualizarStatusFiltro('pago')">Pago</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="atualizarStatusFiltro('parcial')">Parcial</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="atualizarStatusFiltro('pendente')">Pendente</a></li>
+                    </ul>
+                </div>
+
+                <button type="submit" class="btn btn-primary filter-item">Filtrar</button>
             </div>
-            <div id="status-error" class="error-message">Por favor, selecione um status.</div>
         </form>
 
         <!-- Tabela de Gastos -->
-        <form method="post" action="/gastos/pagar">
+        <form method="post" action="/gastos/pagar" id="gastos-form" onsubmit="return validarPagamentos()">
             <div class="table-container">
                 <table class="table table-hover">
                     <thead>
@@ -165,11 +183,13 @@
                                 {% endif %}
                             </td>
                             <td class="payment-cell">
-                                <select class="form-select" name="tipo_pagamento_{{ gasto[5] }}" onchange="atualizarValorPagar(this, {{ gasto[5] }}, {{ gasto[1] }})">
+                                <select class="form-select" name="tipo_pagamento_{{ gasto[5] }}" onchange="atualizarPagamento(this, {{ gasto[5] }}, {{ gasto[1] }})">
+                                    <option value="selecionar">Selecionar</option>
                                     <option value="total">Total</option>
                                     <option value="parcial">Parcial</option>
                                 </select>
                                 <input type="text" id="valor_pago_{{ gasto[5] }}" name="valor_pago_{{ gasto[5] }}" class="form-control" placeholder="R$ 0,00" readonly>
+                                <div id="error_{{ gasto[5] }}" class="error-message">Preencha o valor para pagamento parcial.</div>
                             </td>
                             <td class="action-icons">
                                 <i class="fas fa-edit text-warning" title="Editar"></i>
@@ -200,29 +220,63 @@
             checkboxes.forEach(checkbox => checkbox.checked = this.checked);
         });
 
-        function atualizarValorPagar(select, id, valorTotal) {
+        function atualizarPagamento(select, id, valorTotal) {
             const input = document.getElementById(`valor_pago_${id}`);
+            const errorDiv = document.getElementById(`error_${id}`);
+
             if (select.value === "total") {
                 input.value = `R$ ${valorTotal.toFixed(2).replace(".", ",")}`;
                 input.readOnly = true;
-            } else {
+                errorDiv.style.display = "none";
+            } else if (select.value === "parcial") {
                 input.value = "";
                 input.readOnly = false;
+                errorDiv.style.display = "none";
                 input.placeholder = "Digite o valor";
+            } else {
+                input.value = "";
+                input.readOnly = true;
+                errorDiv.style.display = "none";
             }
         }
 
-        function validarFiltro() {
-            const status = document.getElementById("status").value;
-            const errorDiv = document.getElementById("status-error");
-
-            if (status === "") {
-                errorDiv.style.display = "block";
-                return false;
-            } else {
-                errorDiv.style.display = "none";
-                return true;
+        function atualizarStatusFiltro(status) {
+            const statusSelecionado = document.getElementById('status-selecionado');
+            const statusInput = document.getElementById('status');
+            switch (status) {
+                case 'pago':
+                    statusSelecionado.innerText = 'Pago';
+                    statusInput.value = 'pago';
+                    break;
+                case 'parcial':
+                    statusSelecionado.innerText = 'Parcial';
+                    statusInput.value = 'parcial';
+                    break;
+                case 'pendente':
+                    statusSelecionado.innerText = 'Pendente';
+                    statusInput.value = 'pendente';
+                    break;
+                default:
+                    statusSelecionado.innerText = 'Todos';
+                    statusInput.value = '';
             }
+        }
+
+        function validarPagamentos() {
+            let isValid = true;
+
+            document.querySelectorAll(".payment-cell select").forEach(select => {
+                const id = select.name.split('_')[2];
+                const input = document.getElementById(`valor_pago_${id}`);
+                const errorDiv = document.getElementById(`error_${id}`);
+
+                if (select.value === "parcial" && input.value.trim() === "") {
+                    errorDiv.style.display = "block";
+                    isValid = false;
+                }
+            });
+
+            return isValid;
         }
     </script>
 </body>
