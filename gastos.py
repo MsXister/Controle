@@ -29,3 +29,50 @@ def adicionar_gasto():
         return redirect(url_for('dashboard'))
 
     return render_template('adicionar_gasto.html')
+  
+
+@gastos_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
+def editar_gasto(id):
+    if 'username' not in session:
+        flash('Por favor, faça login para editar gastos.', 'warning')
+        return redirect(url_for('login.login'))
+
+    conn = sqlite3.connect('usuarios.db')
+    cursor = conn.cursor()
+
+    if request.method == 'POST':
+        descricao = request.form['descricao']
+        categoria = request.form['categoria']
+        valor = request.form['valor']
+        data = request.form['data']
+
+        cursor.execute('''
+            UPDATE gastos
+            SET descricao = ?, categoria = ?, valor = ?, data = ?
+            WHERE id = ?
+        ''', (descricao, categoria, valor, data, id))
+        conn.commit()
+        flash('Gasto atualizado com sucesso!', 'success')
+        return redirect(url_for('todos_gastos'))
+
+    cursor.execute('SELECT * FROM gastos WHERE id = ?', (id,))
+    gasto = cursor.fetchone()
+    conn.close()
+
+    return render_template('editar_gasto.html', gasto=gasto)
+
+
+@gastos_bp.route('/excluir/<int:id>', methods=['POST'])
+def excluir_gasto(id):
+    if 'username' not in session:
+        flash('Por favor, faça login para excluir gastos.', 'warning')
+        return redirect(url_for('login.login'))
+
+    conn = sqlite3.connect('usuarios.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM gastos WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+
+    flash('Gasto excluído com sucesso!', 'success')
+    return redirect(url_for('todos_gastos'))

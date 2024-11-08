@@ -257,20 +257,20 @@
                   </div>
                 </td>
                 <td class="action-icons">
-                  <!-- Botão Editar -->
                   <a
-                    href="{{ url_for('gastos.editar', id=gasto[5]) }}"
-                    class="btn btn-warning btn-sm"
+                    href="{{ url_for('gastos.editar_gasto', id=gasto[5]) }}"
+                    class="text-warning me-2"
+                    title="Editar"
                   >
-                    <i class="fas fa-edit"></i> Editar
+                    <i class="fas fa-edit fa-sm"></i>
                   </a>
-                  <!-- Botão Excluir -->
                   <a
-                    href="{{ url_for('gastos.excluir', id=gasto[5]) }}"
-                    class="btn btn-danger btn-sm"
+                    href="{{ url_for('gastos.excluir_gasto', id=gasto[5]) }}"
+                    class="text-danger"
+                    title="Excluir"
                     onclick="return confirm('Confirma a exclusão?');"
                   >
-                    <i class="fas fa-trash-alt"></i> Excluir
+                    <i class="fas fa-trash-alt fa-sm"></i>
                   </a>
                 </td>
               </tr>
