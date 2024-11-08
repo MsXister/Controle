@@ -5,153 +5,220 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Todos os Gastos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #f4f6f9;
             font-family: "Roboto", sans-serif;
         }
 
-        .navbar {
-            background-color: #007bff;
-            color: white;
-        }
-
-        .navbar-brand, .nav-link {
-            color: white !important;
-        }
-
         .container {
-            margin-top: 20px;
-        }
-
-        .filter-container {
-            margin: 15px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            margin-top: 30px;
         }
 
         .table-container {
             background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
         }
 
-        .table {
-            margin-bottom: 0;
+        .navbar {
+            background-color: #007bff;
+            padding: 10px 15px;
         }
 
-        .action-buttons {
-            display: flex;
-            gap: 10px;
+        .navbar-brand {
+            font-weight: bold;
+            color: white !important;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .status-paid {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .status-partial {
+            color: #ffc107;
+            font-weight: bold;
+        }
+
+        .status-unpaid {
+            color: #dc3545;
+            font-weight: bold;
         }
 
         footer {
             background-color: #343a40;
             color: white;
-            text-align: center;
             padding: 10px 0;
+            text-align: center;
             margin-top: 30px;
         }
 
-        .status-paid {
-            color: green;
+        .btn {
+            border-radius: 50px;
+            padding: 5px 20px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
         }
 
-        .status-unpaid {
-            color: red;
+        .btn-success {
+            background-color: #198754;
+            border: none;
         }
 
-        .btn-warning, .btn-danger {
-            font-size: 0.85rem;
-            padding: 5px 10px;
+        .btn-warning {
+            background-color: #fd7e14;
+            border: none;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border: none;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border: none;
+        }
+
+        .form-control {
+            border-radius: 8px;
+        }
+
+        .table thead {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .form-select, .form-control {
+            height: auto;
+        }
+
+        .action-icons i {
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .action-icons i:hover {
+            color: #0056b3;
         }
     </style>
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Controle de Gastos</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/logout">Sair</a></li>
-                </ul>
-            </div>
-        </div>
+    <nav class="navbar">
+        <a class="navbar-brand" href="#">Controle de Gastos</a>
     </nav>
 
-    <!-- Conteúdo Principal -->
     <div class="container">
-        <h2 class="text-center mt-4">Todos os Gastos</h2>
+        <h1 class="text-center mb-4">Todos os Gastos</h1>
 
         <!-- Filtros -->
         <form method="get" action="/todos_gastos">
-            <div class="filter-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
                 <input type="month" id="mes" name="mes" class="form-control" value="{{ mes_atual }}">
-                <button type="submit" class="btn btn-primary">Filtrar</button>
+                <button type="submit" class="btn btn-primary ms-3">Filtrar</button>
             </div>
         </form>
 
         <!-- Tabela de Gastos -->
-        <div class="table-container">
-            <table class="table table-striped">
-                <thead class="table-dark">
-                    <tr>
-                        <th><input type="checkbox" id="select_all"></th>
-                        <th>Descrição</th>
-                        <th>Valor</th>
-                        <th>Data</th>
-                        <th>Categoria</th>
-                        <th>Status</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for gasto in todos_gastos %}
-                    <tr>
-                        <td><input type="checkbox" class="select-item" value="{{ gasto[5] }}"></td>
-                        <td>{{ gasto[0] }}</td>
-                        <td>{{ gasto[1]|formatar_valor }}</td>
-                        <td>{{ gasto[2]|formatar_data }}</td>
-                        <td>{{ gasto[3] }}</td>
-                        <td>
-                            {% if gasto[6] %}
-                            <span class="status-paid">Pago</span>
-                            {% else %}
-                            <span class="status-unpaid">Pendente</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="action-buttons">
-                                <a href="/gastos/editar/{{ gasto[5] }}" class="btn btn-warning">Editar</a>
-                                <a href="/gastos/excluir/{{ gasto[5] }}" class="btn btn-danger" onclick="return confirm('Confirma a exclusão?');">Excluir</a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        <form method="post" action="/gastos/pagar">
+            <div class="table-container">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="select_all"></th>
+                            <th>Descrição</th>
+                            <th>Valor</th>
+                            <th>Data</th>
+                            <th>Categoria</th>
+                            <th>Status</th>
+                            <th>Valor a Pagar</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for gasto in todos_gastos %}
+                        <tr>
+                            <td><input type="checkbox" class="select-item" name="gastos_selecionados" value="{{ gasto[5] }}"></td>
+                            <td>{{ gasto[0] }}</td>
+                            <td>{{ gasto[1]|formatar_valor }}</td>
+                            <td>{{ gasto[2]|formatar_data }}</td>
+                            <td>{{ gasto[3] }}</td>
+                            <td>
+                                {% if gasto[6] %}
+                                <span class="status-paid">Pago</span>
+                                {% elif gasto[7] > 0 %}
+                                <span class="status-partial">Parcial</span>
+                                {% else %}
+                                <span class="status-unpaid">Pendente</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div>
+                                    <select class="form-select mb-2" name="tipo_pagamento_{{ gasto[5] }}" onchange="atualizarValorPagar(this, {{ gasto[5] }}, {{ gasto[1] }})">
+                                        <option value="total">Pagamento Total</option>
+                                        <option value="parcial">Pagamento Parcial</option>
+                                    </select>
+                                    <input type="text" id="valor_pago_{{ gasto[5] }}" name="valor_pago_{{ gasto[5] }}" class="form-control" placeholder="R$ 0,00" readonly>
+                                </div>
+                            </td>
+                            <td class="action-icons">
+                                <i class="fas fa-edit text-warning me-2"></i>
+                                <i class="fas fa-trash-alt text-danger"></i>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-        <!-- Botões -->
-        <div class="text-center mt-4">
-            <a href="/dashboard" class="btn btn-secondary">Voltar</a>
-        </div>
+            <!-- Botões -->
+            <div class="text-center mt-3">
+                <button type="submit" class="btn btn-success">Salvar Pagamentos Selecionados</button>
+                <a href="/dashboard" class="btn btn-secondary">Voltar</a>
+            </div>
+        </form>
     </div>
 
-    <!-- Rodapé -->
     <footer>
         <p>&copy; {{ year }} Controle de Gastos. Todos os direitos reservados.</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById('select_all').addEventListener('click', function() {
-            const checkboxes = document.querySelectorAll('.select-item');
+        document.getElementById("select_all").addEventListener("click", function () {
+            const checkboxes = document.querySelectorAll(".select-item");
             checkboxes.forEach(checkbox => checkbox.checked = this.checked);
         });
+
+        function atualizarValorPagar(select, id, valorTotal) {
+            const input = document.getElementById(`valor_pago_${id}`);
+            if (select.value === "total") {
+                input.value = `R$ ${valorTotal.toFixed(2).replace(".", ",")}`;
+                input.readOnly = true;
+            } else {
+                input.value = "";
+                input.readOnly = false;
+                input.placeholder = "Digite o valor";
+            }
+        }
     </script>
 </body>
 </html>

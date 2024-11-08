@@ -15,16 +15,19 @@ def init_db():
     ''')
 
     # Criação da tabela de gastos
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS gastos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            descricao TEXT NOT NULL,
-            valor REAL NOT NULL,
-            data TEXT NOT NULL,
-            usuario_id INTEGER NOT NULL,
-            FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-        )
-    ''')
+  cursor.execute('''
+    CREATE TABLE IF NOT EXISTS gastos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        descricao TEXT NOT NULL,
+        valor REAL NOT NULL,
+        data TEXT NOT NULL,
+        categoria TEXT NOT NULL,
+        usuario_id INTEGER NOT NULL,
+        pago BOOLEAN DEFAULT 0,
+        valor_pago REAL DEFAULT 0, -- Adiciona esta linha se não existir
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+    )
+''')
 
     # Adicionar usuário admin padrão (opcional)
     cursor.execute('''
