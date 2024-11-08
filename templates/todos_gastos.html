@@ -126,7 +126,7 @@
   <body>
     <div class="container">
       <h1>Todos os Gastos</h1>
-
+     
       <form id="filtro-form" method="get" action="/todos_gastos">
         <div
           class="filter-container d-flex justify-content-between align-items-end flex-wrap gap-3"
@@ -265,17 +265,17 @@
                     <i class="fas fa-edit fa-sm"></i>
                   </a>
                   <form
-                    action="{{ url_for('gastos.excluir_gasto', id=gasto[5]) }}"
-                    method="post"
-                    onsubmit="return confirm('Confirma a exclusão?');"
-                    style="display: inline"
+                    method="POST"
+                    action="{{ url_for('gastos.pagar_gastos') }}"
+                    id="gastos-form"
+                    onsubmit="return validarPagamentos()"
                   >
                     <button
                       type="submit"
-                      class="btn btn-link text-danger p-0"
-                      title="Excluir"
+                      class="btn btn-danger btn-sm"
+                      onclick="return confirm('Confirma a exclusão?');"
                     >
-                      <i class="fas fa-trash-alt fa-sm"></i>
+                      <i class="fas fa-trash-alt"></i>
                     </button>
                   </form>
                 </td>

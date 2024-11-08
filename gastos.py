@@ -66,7 +66,6 @@ def editar_gasto(id):
   
   
 #========================================================= EXCLUIR =============================================================================
-
 @gastos_bp.route('/excluir/<int:id>', methods=['POST'])
 def excluir_gasto(id):
     if 'username' not in session:
@@ -76,21 +75,23 @@ def excluir_gasto(id):
     conn = sqlite3.connect('usuarios.db')
     cursor = conn.cursor()
 
-    cursor.execute('SELECT * FROM gastos WHERE id = ?', (id,))
+    # Verifica se o gasto existe antes de excluir
+    cursor.execute('SELECT id FROM gastos WHERE id = ?', (id,))
     gasto = cursor.fetchone()
-
+    
     if not gasto:
-        flash(f'Gasto com ID {id} não encontrado.', 'danger')
+        flash('Gasto não encontrado.', 'danger')
         conn.close()
         return redirect(url_for('todos_gastos'))
 
-    # Continue com a exclusão
     cursor.execute('DELETE FROM gastos WHERE id = ?', (id,))
     conn.commit()
     conn.close()
 
     flash('Gasto excluído com sucesso!', 'success')
     return redirect(url_for('todos_gastos'))
+
+
 
 
 
@@ -102,21 +103,16 @@ def pagar_gastos():
     conn = sqlite3.connect('usuarios.db')
     cursor = conn.cursor()
 
-    gastos_selecionados = request.form.getlist('gastos_selecionados')
-    
-    if not gastos_selecionados:
-        flash('Nenhum gasto selecionado para pagamento.', 'danger')
-        return redirect(url_for('todos_gastos'))
-
-    for gasto_id in gastos_selecionados:
+    # Processamento dos pagamentos
+    for gasto_id in request.form.getlist('gastos_selecionados'):
         tipo_pagamento = request.form.get(f'tipo_pagamento_{gasto_id}')
         valor_pago_input = request.form.get(f'valor_pago_{gasto_id}', '0').replace('R$', '').replace('.', '').replace(',', '.')
 
         try:
             valor_pago = float(valor_pago_input)
         except ValueError:
-            flash(f'O valor inserido para o gasto ID {gasto_id} é inválido.', 'danger')
-            continue
+            flash(f'O valor inserido para o gasto {gasto_id} é inválido.', 'danger')
+            return redirect(url_for('todos_gastos'))
 
         if tipo_pagamento == 'total':
             cursor.execute('UPDATE gastos SET pago = 1, valor_pago = valor WHERE id = ?', (gasto_id,))
@@ -124,11 +120,10 @@ def pagar_gastos():
             cursor.execute('SELECT valor, valor_pago FROM gastos WHERE id = ?', (gasto_id,))
             valor_total, valor_pago_atual = cursor.fetchone()
             novo_valor_pago = valor_pago_atual + valor_pago
-
             cursor.execute('UPDATE gastos SET valor_pago = ? WHERE id = ?', (novo_valor_pago, gasto_id))
             cursor.execute('UPDATE gastos SET pago = CASE WHEN valor_pago >= valor THEN 1 ELSE 0 END WHERE id = ?', (gasto_id,))
 
     conn.commit()
     conn.close()
-    flash('Pagamentos processados!', 'success')
+    flash('Pagamentos atualizados com sucesso!', 'success')
     return redirect(url_for('todos_gastos'))
