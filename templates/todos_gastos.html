@@ -169,7 +169,6 @@
             />
           </div>
 
-          <!-- Filtro de Status -->
           <div class="filter-item">
             <label for="status" class="form-label">Status:</label>
             <select id="status" name="status" class="form-select">
@@ -234,7 +233,8 @@
                   {% endif %}
                 </td>
                 <td>{{ gasto[7]|formatar_valor }}</td>
-                <td>{{ (gasto[1] - gasto[7]|float)|formatar_valor }}</td>
+                <td>{{ (gasto[1]|float - gasto[7]|float)|formatar_valor }}</td>
+                <!-- Saldo -->
                 <td class="payment-cell">
                   <select
                     class="form-select"
@@ -259,19 +259,23 @@
                 <td class="action-icons">
                   <a
                     href="{{ url_for('gastos.editar_gasto', id=gasto[5]) }}"
-                    class="text-warning me-2"
                     title="Editar"
                   >
-                    <i class="fas fa-edit fa-sm"></i>
+                    <i class="fas fa-edit text-warning"></i>
                   </a>
-                  <a
-                    href="{{ url_for('gastos.excluir_gasto', id=gasto[5]) }}"
-                    class="text-danger"
-                    title="Excluir"
-                    onclick="return confirm('Confirma a exclusão?');"
+                  <form
+                    method="post"
+                    action="{{ url_for('gastos.excluir_gasto', id=gasto[5]) }}"
+                    style="display: inline"
                   >
-                    <i class="fas fa-trash-alt fa-sm"></i>
-                  </a>
+                    <button
+                      type="submit"
+                      style="border: none; background: none"
+                      onclick="return confirm('Confirma a exclusão?');"
+                    >
+                      <i class="fas fa-trash-alt text-danger"></i>
+                    </button>
+                  </form>
                 </td>
               </tr>
               {% endfor %}
@@ -343,17 +347,39 @@
 
       function validarPagamentos() {
         let isValid = true;
+        let selecionouGasto = false;
+        let mensagemErro = "";
 
-        document.querySelectorAll(".payment-cell select").forEach((select) => {
-          const id = select.name.split("_")[2];
-          const input = document.getElementById(`valor_pago_${id}`);
-          const errorDiv = document.getElementById(`error_${id}`);
-
-          if (select.value === "parcial" && input.value.trim() === "") {
-            errorDiv.style.display = "block";
-            isValid = false;
+        // Verifica se pelo menos um gasto foi selecionado
+        document.querySelectorAll(".select-item").forEach((checkbox) => {
+          if (checkbox.checked) {
+            selecionouGasto = true;
           }
         });
+
+        if (!selecionouGasto) {
+          mensagemErro += "Selecione pelo menos um gasto.\n";
+          isValid = false;
+        }
+
+        // Verifica se todos os gastos selecionados têm um tipo de pagamento escolhido
+        document.querySelectorAll(".select-item").forEach((checkbox) => {
+          if (checkbox.checked) {
+            const id = checkbox.value;
+            const tipoPagamento = document.querySelector(
+              `select[name="tipo_pagamento_${id}"]`
+            ).value;
+
+            if (tipoPagamento === "selecionar") {
+              mensagemErro += `Escolha o tipo de pagamento para o gasto ID ${id}.\n`;
+              isValid = false;
+            }
+          }
+        });
+
+        if (!isValid) {
+          alert(mensagemErro.trim());
+        }
 
         return isValid;
       }
@@ -408,6 +434,18 @@
             .replace(".", ",")}`;
           input.readOnly = true;
           statusCell.innerHTML = '<span class="status-unpaid">Pendente</span>';
+        }
+      }
+      function toggleDiaInput(periodo) {
+        const mesContainer = document.getElementById("mes-container");
+        const diaContainer = document.getElementById("dia-container");
+
+        if (periodo === "dia") {
+          mesContainer.style.display = "none";
+          diaContainer.style.display = "block";
+        } else {
+          mesContainer.style.display = "block";
+          diaContainer.style.display = "none";
         }
       }
     </script>

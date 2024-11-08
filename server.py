@@ -96,33 +96,53 @@ def todos_gastos():
         flash('Por favor, faça login para acessar os gastos.', 'warning')
         return redirect(url_for('login.login'))
 
+    # Capturar os filtros do formulário
+    periodo = request.args.get('periodo', 'mes')
     mes_atual = request.args.get('mes', datetime.now().strftime('%Y-%m'))
+    dia_atual = request.args.get('dia', datetime.now().strftime('%Y-%m-%d'))
+    status = request.args.get('status', '')
+
+    # Construir consulta condicional
+    query = '''
+        SELECT g.descricao, ROUND(g.valor, 2), g.data, g.categoria, u.username, g.id, g.pago, g.valor_pago
+        FROM gastos g
+        JOIN usuarios u ON g.usuario_id = u.id
+        WHERE 1=1
+    '''
+    params = []
+
+    if periodo == 'mes':
+        query += " AND strftime('%Y-%m', g.data) = ?"
+        params.append(mes_atual)
+    elif periodo == 'dia':
+        query += " AND g.data = ?"
+        params.append(dia_atual)
+
+    if status:
+        query += " AND g.pago = ?"
+        if status == 'pago':
+            params.append(1)
+        elif status == 'parcial':
+            params.append(0)
+            query += " AND g.valor_pago > 0"
+        elif status == 'pendente':
+            params.append(0)
+            query += " AND g.valor_pago = 0"
 
     conn = sqlite3.connect('usuarios.db')
     cursor = conn.cursor()
-
-    # Garantir que valores nulos sejam tratados corretamente
-    cursor.execute('''
-        SELECT 
-            g.descricao, 
-            ROUND(g.valor, 2), 
-            g.data, 
-            g.categoria, 
-            u.username, 
-            g.id, 
-            g.pago, 
-            COALESCE(g.valor_pago, 0) -- Tratamento de nulos
-        FROM gastos g
-        JOIN usuarios u ON g.usuario_id = u.id
-        WHERE strftime('%Y-%m', g.data) = ?
-    ''', (mes_atual,))
-    todos_gastos = [
-    (descricao, float(valor), data, categoria, username, id_gasto, pago, float(valor_pago))
-    for descricao, valor, data, categoria, username, id_gasto, pago, valor_pago in cursor.fetchall()
-    ]
+    cursor.execute(query, params)
+    todos_gastos = cursor.fetchall()
     conn.close()
 
-    return render_template('todos_gastos.html', mes_atual=mes_atual, todos_gastos=todos_gastos, year=datetime.now().year)
+    return render_template(
+        'todos_gastos.html',
+        mes_atual=mes_atual,
+        dia_atual=dia_atual,
+        todos_gastos=todos_gastos,
+        year=datetime.now().year
+    )
+
   
 # ------------------------------------------- TODOS OS GASTOS --------------------------------------------------------------  
 
