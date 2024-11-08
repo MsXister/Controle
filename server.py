@@ -172,28 +172,38 @@ def pagar_gastos():
 
         try:
             valor_pago = float(valor_pago_input)
+            if valor_pago <= 0:
+                raise ValueError("Valor pago deve ser maior que zero.")
         except ValueError:
-            flash(f'O valor inserido para o gasto {gasto_id} é inválido.', 'danger')
+            flash(f'Valor inválido inserido para o gasto ID {gasto_id}. Por favor, corrija.', 'danger')
             return redirect(url_for('todos_gastos'))
 
-        if tipo_pagamento == 'total':
-            # Marca o gasto como totalmente pago
-            cursor.execute('UPDATE gastos SET pago = 1, valor_pago = valor WHERE id = ?', (gasto_id,))
-        elif tipo_pagamento == 'parcial':
-            # Atualiza o valor pago parcialmente
-            cursor.execute('SELECT valor, valor_pago FROM gastos WHERE id = ?', (gasto_id,))
-            valor_total, valor_pago_atual = cursor.fetchone()
+        # Recupera valores atuais do gasto
+        cursor.execute('SELECT valor, valor_pago FROM gastos WHERE id = ?', (gasto_id,))
+        valor_total, valor_pago_atual = cursor.fetchone()
 
+        if tipo_pagamento == 'total':
+            if valor_pago_atual < valor_total:
+                cursor.execute('UPDATE gastos SET valor_pago = valor, pago = 1 WHERE id = ?', (gasto_id,))
+            else:
+                flash(f'O gasto ID {gasto_id} já está totalmente pago.', 'info')
+
+        elif tipo_pagamento == 'parcial':
             novo_valor_pago = valor_pago_atual + valor_pago
 
+            if novo_valor_pago > valor_total:
+                flash(f'O valor pago para o gasto ID {gasto_id} excede o total. Verifique o valor.', 'danger')
+                return redirect(url_for('todos_gastos'))
+
             cursor.execute('UPDATE gastos SET valor_pago = ? WHERE id = ?', (novo_valor_pago, gasto_id))
-            # Atualiza o status para pago se o valor total já foi quitado
+            # Atualiza o status para pago se valor_total for atingido
             cursor.execute('UPDATE gastos SET pago = CASE WHEN valor_pago >= valor THEN 1 ELSE 0 END WHERE id = ?', (gasto_id,))
 
     conn.commit()
     conn.close()
     flash('Pagamentos atualizados com sucesso!', 'success')
     return redirect(url_for('todos_gastos'))
+
 # ------------------------------------------- GASTO/PAGAR --------------------------------------------------------------
   
 # ------------------------------------------- EXCLUIR --------------------------------------------------------------
