@@ -23,20 +23,11 @@
             padding: 20px;
         }
 
-        .navbar {
-            background-color: #007bff;
-            padding: 10px 15px;
-        }
-
-        .navbar-brand {
-            font-weight: bold;
-            color: white !important;
-        }
-
         h1 {
             font-size: 1.8rem;
             font-weight: bold;
             color: #333;
+            text-align: center;
         }
 
         .status-paid {
@@ -60,37 +51,19 @@
             padding: 10px 0;
             text-align: center;
             margin-top: 30px;
-        }
-
-        .btn {
-            border-radius: 50px;
-            padding: 5px 20px;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
-
-        .btn-success {
-            background-color: #198754;
-            border: none;
-        }
-
-        .btn-warning {
-            background-color: #fd7e14;
-            border: none;
-        }
-
-        .btn-danger {
-            background-color: #dc3545;
-            border: none;
-        }
-
-        .btn-secondary {
-            background-color: #6c757d;
-            border: none;
-        }
-
-        .form-control {
             border-radius: 8px;
+        }
+
+        .filter-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+
+        .filter-row select {
+            max-width: 200px;
         }
 
         .table thead {
@@ -98,43 +71,64 @@
             color: white;
         }
 
-        .table tbody tr {
-            transition: background-color 0.2s ease;
-        }
-
         .table tbody tr:hover {
-            background-color: #f1f1f1;
+            background-color: #f8f9fa;
         }
 
-        .form-select, .form-control {
-            height: auto;
+        .payment-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-select {
+            max-width: 120px;
+        }
+
+        .form-control {
+            max-width: 100px;
         }
 
         .action-icons i {
             cursor: pointer;
-            transition: color 0.2s ease;
+            margin-right: 10px;
+            transition: color 0.3s ease;
         }
 
         .action-icons i:hover {
             color: #0056b3;
         }
+
+        .btn-success {
+            background-color: #198754;
+            border: none;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 0.9rem;
+            margin-top: -10px;
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <a class="navbar-brand" href="#">Controle de Gastos</a>
-    </nav>
-
     <div class="container">
-        <h1 class="text-center mb-4">Todos os Gastos</h1>
+        <h1>Todos os Gastos</h1>
 
         <!-- Filtros -->
-        <form method="get" action="/todos_gastos">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+        <form id="filtro-form" method="get" action="/todos_gastos" onsubmit="return validarFiltro()">
+            <div class="filter-row">
                 <input type="month" id="mes" name="mes" class="form-control" value="{{ mes_atual }}">
-                <button type="submit" class="btn btn-primary ms-3">Filtrar</button>
+                <select id="status" name="status" class="form-select">
+                    <option value="">Selecione o Status</option>
+                    <option value="pago">Pago</option>
+                    <option value="parcial">Parcial</option>
+                    <option value="pendente">Pendente</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Filtrar</button>
             </div>
+            <div id="status-error" class="error-message">Por favor, selecione um status.</div>
         </form>
 
         <!-- Tabela de Gastos -->
@@ -149,7 +143,7 @@
                             <th>Data</th>
                             <th>Categoria</th>
                             <th>Status</th>
-                            <th>Valor a Pagar</th>
+                            <th>Pagamento</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
@@ -170,18 +164,16 @@
                                 <span class="status-unpaid">Pendente</span>
                                 {% endif %}
                             </td>
-                            <td>
-                                <div>
-                                    <select class="form-select mb-2" name="tipo_pagamento_{{ gasto[5] }}" onchange="atualizarValorPagar(this, {{ gasto[5] }}, {{ gasto[1] }})">
-                                        <option value="total">Pagamento Total</option>
-                                        <option value="parcial">Pagamento Parcial</option>
-                                    </select>
-                                    <input type="text" id="valor_pago_{{ gasto[5] }}" name="valor_pago_{{ gasto[5] }}" class="form-control" placeholder="R$ 0,00" readonly>
-                                </div>
+                            <td class="payment-cell">
+                                <select class="form-select" name="tipo_pagamento_{{ gasto[5] }}" onchange="atualizarValorPagar(this, {{ gasto[5] }}, {{ gasto[1] }})">
+                                    <option value="total">Total</option>
+                                    <option value="parcial">Parcial</option>
+                                </select>
+                                <input type="text" id="valor_pago_{{ gasto[5] }}" name="valor_pago_{{ gasto[5] }}" class="form-control" placeholder="R$ 0,00" readonly>
                             </td>
                             <td class="action-icons">
-                                <i class="fas fa-edit text-warning me-2"></i>
-                                <i class="fas fa-trash-alt text-danger"></i>
+                                <i class="fas fa-edit text-warning" title="Editar"></i>
+                                <i class="fas fa-trash-alt text-danger" title="Excluir" onclick="return confirm('Confirma a exclusão?');"></i>
                             </td>
                         </tr>
                         {% endfor %}
@@ -191,7 +183,7 @@
 
             <!-- Botões -->
             <div class="text-center mt-3">
-                <button type="submit" class="btn btn-success">Salvar Pagamentos Selecionados</button>
+                <button type="submit" class="btn btn-success">Pagar</button>
                 <a href="/dashboard" class="btn btn-secondary">Voltar</a>
             </div>
         </form>
@@ -217,6 +209,19 @@
                 input.value = "";
                 input.readOnly = false;
                 input.placeholder = "Digite o valor";
+            }
+        }
+
+        function validarFiltro() {
+            const status = document.getElementById("status").value;
+            const errorDiv = document.getElementById("status-error");
+
+            if (status === "") {
+                errorDiv.style.display = "block";
+                return false;
+            } else {
+                errorDiv.style.display = "none";
+                return true;
             }
         }
     </script>
