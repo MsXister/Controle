@@ -1,9 +1,11 @@
+# Supondo que este código esteja em utils.py
 import sqlite3
 
 def verificar_ou_adicionar_colunas():
     conn = sqlite3.connect('usuarios.db')
     cursor = conn.cursor()
 
+    # Definições das colunas que devem existir
     colunas_necessarias = {
         'gastos': [
             ('id', 'INTEGER PRIMARY KEY AUTOINCREMENT'),
@@ -11,13 +13,9 @@ def verificar_ou_adicionar_colunas():
             ('categoria', 'TEXT NOT NULL DEFAULT "Outros"'),
             ('valor', 'REAL NOT NULL DEFAULT 0.0'),
             ('data', 'TEXT NOT NULL DEFAULT "2000-01-01"'),
-            ('usuario_id', 'INTEGER NOT NULL DEFAULT 1')
-        ],
-        'usuarios': [
-            ('id', 'INTEGER PRIMARY KEY AUTOINCREMENT'),
-            ('username', 'TEXT NOT NULL'),
-            ('password', 'TEXT NOT NULL'),
-            ('is_admin', 'BOOLEAN NOT NULL DEFAULT 0')
+            ('usuario_id', 'INTEGER NOT NULL DEFAULT 1'),
+            ('pago', 'INTEGER DEFAULT 0'),  # Adicionando a coluna 'pago'
+            ('valor_pago', 'REAL DEFAULT 0.0')  # Adicionando a coluna 'valor_pago'
         ]
     }
 
@@ -33,3 +31,6 @@ def verificar_ou_adicionar_colunas():
 
     conn.close()
     print("Verificação concluída. Todas as tabelas estão atualizadas.")
+
+# Chame a função manualmente
+verificar_ou_adicionar_colunas()

@@ -174,6 +174,8 @@ def alterar_senha():
 
     return render_template('alterar_senha.html', is_logged_in='username' in session)
 
+from datetime import datetime
+
 @app.route('/todos_gastos', methods=['GET', 'POST'])
 def todos_gastos():
     if 'username' not in session:
@@ -193,17 +195,15 @@ def todos_gastos():
         WHERE strftime('%Y', g.data) = ? AND strftime('%m', g.data) = ?
         ORDER BY g.data DESC
     ''', (ano, mes))
-    
-    # Formatar a data antes de enviar ao template
+
     todos_gastos = [
-        (desc, valor, datetime.strptime(data, '%Y-%m-%d').strftime('%d/%m/%Y'), cat, user, id_gasto, pago, valor_pago)
+        (desc, valor, data, cat, user, id_gasto, pago, valor_pago)
         for desc, valor, data, cat, user, id_gasto, pago, valor_pago in cursor.fetchall()
     ]
-    
+
     conn.close()
 
     return render_template('todos_gastos.html', todos_gastos=todos_gastos, mes_atual=request.args.get('mes', datetime.now().strftime('%Y-%m')))
-
 
 # Rota para gerenciar usuários (apenas admins)
 @app.route('/gerenciar_usuarios')
@@ -249,6 +249,15 @@ def exibir_senha(username):
     else:
         print(f"Usuário {username} não encontrado.")
 exibir_senha('fabio.andrades')
+
+# Função para formatar a data
+def formatar_data(data):
+    return datetime.strptime(data, '%Y-%m-%d').strftime('%d/%m/%Y')
+
+app.jinja_env.filters['formatar_data'] = formatar_data
+  
+# Registrar o filtro no Jinja
+app.jinja_env.filters['formatar_data'] = formatar_data
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)
