@@ -7,6 +7,7 @@ from utils import verificar_ou_adicionar_colunas  # Importar a função
 from gastos import gastos_bp
 from datetime import datetime
 
+
 app = Flask(__name__)
 
 # Defina uma chave secreta para gerenciar as sessões

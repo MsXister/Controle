@@ -126,7 +126,7 @@
   <body>
     <div class="container">
       <h1>Todos os Gastos</h1>
-     
+
       <form id="filtro-form" method="get" action="/todos_gastos">
         <div
           class="filter-container d-flex justify-content-between align-items-end flex-wrap gap-3"
@@ -239,7 +239,7 @@
                   <select
                     class="form-select"
                     name="tipo_pagamento_{{ gasto[5] }}"
-                    onchange="atualizarPagamento(this, {{ gasto[5] }}, {{ gasto[1] }})"
+                    onchange="atualizarPagamento(this, {{ gasto[5] }}, {{ gasto[1] }}, {{ gasto[7] }})"
                   >
                     <option value="selecionar">Selecionar</option>
                     <option value="total">Total</option>
