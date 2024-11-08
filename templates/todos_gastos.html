@@ -283,6 +283,7 @@
           </table>
         </div>
         <!-- Botões de Ação -->
+        <div id="erro-container" class="alert alert-danger" style="display: none;"></div>
         <div class="text-center mt-3">
           <button type="submit" class="btn btn-success">Pagar</button>
           <a href="/dashboard" class="btn btn-secondary">Voltar</a>
@@ -303,6 +304,8 @@
           checkboxes.forEach((checkbox) => (checkbox.checked = this.checked));
         });
 
+#======================================= atualizar pagamento ==========================================================#
+  
       function atualizarPagamento(select, id, valorTotal) {
         const input = document.getElementById(`valor_pago_${id}`);
         const errorDiv = document.getElementById(`error_${id}`);
@@ -323,6 +326,8 @@
         }
       }
 
+#======================================= atualizar status filtro ==========================================================#
+  
       function atualizarStatusFiltro(status) {
         const statusSelecionado = document.getElementById("status-selecionado");
         const statusInput = document.getElementById("status");
@@ -344,45 +349,64 @@
             statusInput.value = "";
         }
       }
-
+      
+#======================================= validar pagamento ==========================================================#
+  
       function validarPagamentos() {
-        let isValid = true;
-        let selecionouGasto = false;
-        let mensagemErro = "";
+    let isValid = true;
+    let mensagensErro = [];
+    const erroContainer = document.getElementById("erro-container");
+    erroContainer.innerHTML = ""; // Limpa mensagens anteriores
+    erroContainer.style.display = "none";
 
-        // Verifica se pelo menos um gasto foi selecionado
-        document.querySelectorAll(".select-item").forEach((checkbox) => {
-          if (checkbox.checked) {
+    let selecionouGasto = false;
+
+    // Verifica se pelo menos um gasto foi selecionado
+    document.querySelectorAll(".select-item").forEach((checkbox) => {
+        if (checkbox.checked) {
             selecionouGasto = true;
-          }
-        });
 
-        if (!selecionouGasto) {
-          mensagemErro += "Selecione pelo menos um gasto.\n";
-          isValid = false;
-        }
-
-        // Verifica se todos os gastos selecionados têm um tipo de pagamento escolhido
-        document.querySelectorAll(".select-item").forEach((checkbox) => {
-          if (checkbox.checked) {
             const id = checkbox.value;
-            const tipoPagamento = document.querySelector(
-              `select[name="tipo_pagamento_${id}"]`
-            ).value;
+            const tipoPagamento = document.querySelector(`select[name="tipo_pagamento_${id}"]`).value;
+            const saldo = parseFloat(document.getElementById(`saldo_${id}`).innerText.replace("R$", "").replace(",", ".").trim());
+            const statusCell = document.getElementById(`status_${id}`).innerText;
+
+            if (statusCell === "Pago") {
+                mensagensErro.push(`O gasto ID ${id} já está pago.`);
+                isValid = false;
+            }
+
+            if (saldo <= 0) {
+                mensagensErro.push(`O gasto ID ${id} já foi completamente pago.`);
+                isValid = false;
+            }
 
             if (tipoPagamento === "selecionar") {
-              mensagemErro += `Escolha o tipo de pagamento para o gasto ID ${id}.\n`;
-              isValid = false;
+                mensagensErro.push(`Escolha o tipo de pagamento para o gasto ID ${id}.`);
+                isValid = false;
             }
-          }
-        });
-
-        if (!isValid) {
-          alert(mensagemErro.trim());
         }
+    });
 
-        return isValid;
-      }
+    if (!selecionouGasto) {
+        mensagensErro.push("Selecione pelo menos um gasto para pagar.");
+        isValid = false;
+    }
+
+    if (!isValid) {
+        erroContainer.style.display = "block";
+        mensagensErro.forEach((mensagem) => {
+            const erroItem = document.createElement("p");
+            erroItem.innerText = mensagem;
+            erroContainer.appendChild(erroItem);
+        });
+    }
+
+    return isValid; // Só envia o formulário se tudo estiver correto
+}
+
+      
+#======================================= toggleDiaInput ==========================================================#
 
       function toggleDiaInput(periodo) {
         const mesContainer = document.getElementById("mes-container");
@@ -396,6 +420,8 @@
           diaContainer.style.display = "none";
         }
       }
+      
+#======================================= ATUALIZAR PAGAMENTO 2 ==========================================================#
 
       function atualizarPagamento(select, id, valorTotal, valorPago) {
         const input = document.getElementById(`valor_input_${id}`);
@@ -436,6 +462,9 @@
           statusCell.innerHTML = '<span class="status-unpaid">Pendente</span>';
         }
       }
+      
+#======================================= ATUALIZAR PAGAMENTO 2 ==========================================================#
+  
       function toggleDiaInput(periodo) {
         const mesContainer = document.getElementById("mes-container");
         const diaContainer = document.getElementById("dia-container");
