@@ -21,6 +21,7 @@ app.register_blueprint(cadastro_bp, url_prefix='/cadastro')
 app.register_blueprint(login_bp, url_prefix='/login')
 
 
+
 # Rota principal: redireciona para o dashboard se o usuário estiver logado, caso contrário, vai para login
 @app.route('/')
 def home():
@@ -176,34 +177,36 @@ def alterar_senha():
 
 from datetime import datetime
 
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+from datetime import datetime
+import sqlite3
+
+app = Flask(__name__)
+
 @app.route('/todos_gastos', methods=['GET', 'POST'])
 def todos_gastos():
     if 'username' not in session:
         flash('Por favor, faça login para acessar os gastos.', 'warning')
         return redirect(url_for('login.login'))
 
-    mes = request.args.get('mes', datetime.now().strftime('%Y-%m'))
-    ano, mes = mes.split('-')
-
+    mes_atual = request.args.get('mes', datetime.now().strftime('%Y-%m'))
+    
+    # Substitua essa parte pela sua lógica de consulta de gastos
     conn = sqlite3.connect('usuarios.db')
     cursor = conn.cursor()
-
     cursor.execute('''
         SELECT g.descricao, ROUND(g.valor, 2), g.data, g.categoria, u.username, g.id, g.pago, g.valor_pago
         FROM gastos g
         JOIN usuarios u ON g.usuario_id = u.id
-        WHERE strftime('%Y', g.data) = ? AND strftime('%m', g.data) = ?
-        ORDER BY g.data DESC
-    ''', (ano, mes))
-
-    todos_gastos = [
-        (desc, valor, data, cat, user, id_gasto, pago, valor_pago)
-        for desc, valor, data, cat, user, id_gasto, pago, valor_pago in cursor.fetchall()
-    ]
-
+        WHERE strftime('%Y-%m', g.data) = ?
+    ''', (mes_atual,))
+    todos_gastos = cursor.fetchall()
     conn.close()
 
-    return render_template('todos_gastos.html', todos_gastos=todos_gastos, mes_atual=mes)
+    return render_template('todos_gastos.html', mes_atual=mes_atual, todos_gastos=todos_gastos, year=datetime.now().year)
+
+
+
   
 # Rota para gerenciar usuários (apenas admins)
 @app.route('/gerenciar_usuarios')
@@ -250,14 +253,14 @@ def exibir_senha(username):
         print(f"Usuário {username} não encontrado.")
 exibir_senha('fabio.andrades')
 
-# Filtro personalizado para formatar data
+# Filtro personalizado para formatar a data no formato DD/MM/YYYY
 def formatar_data(data):
     try:
         return datetime.strptime(data, "%Y-%m-%d").strftime("%d/%m/%Y")
     except ValueError:
         return data  # Retorna o valor original se não for uma data válida
 
-# Registro do filtro personalizado
+# Registro do filtro no ambiente Jinja2
 app.jinja_env.filters['formatar_data'] = formatar_data
 
 # Filtro para formatar valores como moeda
