@@ -198,7 +198,11 @@
               <tr>
                 <th><input type="checkbox" id="select_all" /></th>
                 <th>Descrição</th>
-                <th>Valor</th>
+                <th>Valor Total</th>
+                <th>Valor Pago</th>
+                <!-- NOVO -->
+                <th>Saldo</th>
+                <!-- NOVO -->
                 <th>Data</th>
                 <th>Categoria</th>
                 <th>Status</th>
@@ -219,9 +223,17 @@
                 </td>
                 <td>{{ gasto[0] }}</td>
                 <td>{{ gasto[1]|formatar_valor }}</td>
+                <td id="valor_pago_{{ gasto[5] }}">
+                  {{ gasto[7]|formatar_valor }}
+                </td>
+                <!-- Novo -->
+                <td id="saldo_{{ gasto[5] }}">
+                  {{ (gasto[1] - gasto[7])|formatar_valor }}
+                </td>
+                <!-- Novo -->
                 <td>{{ gasto[2]|formatar_data }}</td>
                 <td>{{ gasto[3] }}</td>
-                <td>
+                <td id="status_{{ gasto[5] }}">
                   {% if gasto[6] %}
                   <span class="status-paid">Pago</span>
                   {% elif gasto[7] > 0 %}
@@ -234,7 +246,7 @@
                   <select
                     class="form-select"
                     name="tipo_pagamento_{{ gasto[5] }}"
-                    onchange="atualizarPagamento(this, {{ gasto[5] }}, {{ gasto[1] }})"
+                    onchange="atualizarPagamento(this, {{ gasto[5] }}, {{ gasto[1] }}, {{ gasto[7] }})"
                   >
                     <option value="selecionar">Selecionar</option>
                     <option value="total">Total</option>
@@ -242,11 +254,10 @@
                   </select>
                   <input
                     type="text"
-                    id="valor_pago_{{ gasto[5] }}"
-                    name="valor_pago_{{ gasto[5] }}"
+                    id="valor_input_{{ gasto[5] }}"
+                    name="valor_pago_input_{{ gasto[5] }}"
                     class="form-control"
                     placeholder="R$ 0,00"
-                    readonly
                   />
                   <div id="error_{{ gasto[5] }}" class="error-message">
                     Preencha o valor para pagamento parcial.
@@ -345,23 +356,59 @@
 
         return isValid;
       }
-      
-      function toggleDiaInput(periodo) {
-        const mesContainer = document.getElementById('mes-container');
-        const diaContainer = document.getElementById('dia-container');
 
-        if (periodo === 'dia') {
-            mesContainer.style.display = 'none';
-            diaContainer.style.display = 'block';
+      function toggleDiaInput(periodo) {
+        const mesContainer = document.getElementById("mes-container");
+        const diaContainer = document.getElementById("dia-container");
+
+        if (periodo === "dia") {
+          mesContainer.style.display = "none";
+          diaContainer.style.display = "block";
         } else {
-            mesContainer.style.display = 'block';
-            diaContainer.style.display = 'none';
+          mesContainer.style.display = "block";
+          diaContainer.style.display = "none";
         }
-    }
-      
+      }
+
+      function atualizarPagamento(select, id, valorTotal, valorPago) {
+        const input = document.getElementById(`valor_input_${id}`);
+        const saldoCell = document.getElementById(`saldo_${id}`);
+        const statusCell = document.getElementById(`status_${id}`);
+
+        if (select.value === "total") {
+          input.value = `R$ ${(valorTotal - valorPago)
+            .toFixed(2)
+            .replace(".", ",")}`;
+          saldoCell.innerText = "R$ 0,00";
+          statusCell.innerHTML = '<span class="status-paid">Pago</span>';
+          input.readOnly = true;
+        } else if (select.value === "parcial") {
+          input.value = "";
+          input.readOnly = false;
+          input.placeholder = "Digite o valor";
+          input.addEventListener("input", () => {
+            const valorParcial =
+              parseFloat(
+                input.value.replace("R$", "").replace(".", "").replace(",", ".")
+              ) || 0;
+            const saldo = valorTotal - (valorPago + valorParcial);
+            saldoCell.innerText = `R$ ${saldo.toFixed(2).replace(".", ",")}`;
+            if (saldo > 0) {
+              statusCell.innerHTML =
+                '<span class="status-partial">Parcial</span>';
+            } else {
+              statusCell.innerHTML = '<span class="status-paid">Pago</span>';
+            }
+          });
+        } else {
+          input.value = "";
+          saldoCell.innerText = `R$ ${(valorTotal - valorPago)
+            .toFixed(2)
+            .replace(".", ",")}`;
+          input.readOnly = true;
+          statusCell.innerHTML = '<span class="status-unpaid">Pendente</span>';
+        }
+      }
     </script>
-    
-         
-    
   </body>
 </html>

@@ -112,6 +112,27 @@ def logout():
     session.pop('is_admin', None)  # Remove também o status de admin
     flash('Você saiu da sua conta com sucesso.', 'success')
     return redirect(url_for('login.login'))
+  
+@app.route('/gastos/pagar', methods=['POST'])
+def pagar_gastos():
+    conn = sqlite3.connect('usuarios.db')
+    cursor = conn.cursor()
+
+    for gasto_id in request.form.getlist('gastos_selecionados'):
+        tipo_pagamento = request.form.get(f'tipo_pagamento_{gasto_id}')
+        valor_pago_input = request.form.get(f'valor_pago_input_{{gasto_id}}', '0').replace('R$', '').replace('.', '').replace(',', '.')
+
+        if tipo_pagamento == 'total':
+            cursor.execute('UPDATE gastos SET pago = 1, valor_pago = valor WHERE id = ?', (gasto_id,))
+        elif tipo_pagamento == 'parcial':
+            cursor.execute('UPDATE gastos SET valor_pago = valor_pago + ? WHERE id = ?', (valor_pago_input, gasto_id))
+            cursor.execute('UPDATE gastos SET pago = CASE WHEN valor_pago >= valor THEN 1 ELSE 0 END WHERE id = ?', (gasto_id,))
+
+    conn.commit()
+    conn.close()
+    flash('Pagamentos atualizados com sucesso!', 'success')
+    return redirect(url_for('todos_gastos'))
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)
