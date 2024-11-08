@@ -121,17 +121,6 @@
         margin-top: -10px;
         display: none;
       }
-      .alert {
-        padding: 10px;
-        border-radius: 5px;
-        margin-top: 10px;
-      }
-
-      .alert-danger {
-        background-color: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-      }
     </style>
   </head>
   <body>
@@ -180,6 +169,7 @@
             />
           </div>
 
+          <!-- Filtro de Status -->
           <div class="filter-item">
             <label for="status" class="form-label">Status:</label>
             <select id="status" name="status" class="form-select">
@@ -231,11 +221,10 @@
                   />
                 </td>
                 <td>{{ gasto[0] }}</td>
-                <td>{{ gasto[1]|formatar_valor }}</td>
-                <td id="saldo_{{ gasto[5] }}">
-                  R$ {{ (gasto[1] - gasto[7]|float)|formatar_valor }}
-                </td>
-                <td id="status_{{ gasto[5] }}">
+                <td>{{ (gasto[1] - gasto[7]|float)|formatar_valor }}</td>
+                <td>{{ gasto[2]|formatar_data }}</td>
+                <td>{{ gasto[3] }}</td>
+                <td>
                   {% if gasto[6] %}
                   <span class="status-paid">Pago</span>
                   {% elif gasto[7] > 0 %}
@@ -245,12 +234,12 @@
                   {% endif %}
                 </td>
                 <td>{{ gasto[7]|formatar_valor }}</td>
-                <td>{{ (gasto[1]|float - gasto[7]|float)|formatar_valor }}</td>
-                <!-- Saldo -->
+                <td>{{ (gasto[1] - gasto[7]|float)|formatar_valor }}</td>
                 <td class="payment-cell">
                   <select
-                    name="tipo_pagamento_{{ gasto[5] }}"
                     class="form-select"
+                    name="tipo_pagamento_{{ gasto[5] }}"
+                    onchange="atualizarPagamento(this, {{ gasto[5] }}, {{ gasto[1] }})"
                   >
                     <option value="selecionar">Selecionar</option>
                     <option value="total">Total</option>
@@ -270,23 +259,19 @@
                 <td class="action-icons">
                   <a
                     href="{{ url_for('gastos.editar_gasto', id=gasto[5]) }}"
+                    class="text-warning me-2"
                     title="Editar"
                   >
-                    <i class="fas fa-edit text-warning"></i>
+                    <i class="fas fa-edit fa-sm"></i>
                   </a>
-                  <form
-                    method="post"
-                    action="{{ url_for('gastos.excluir_gasto', id=gasto[5]) }}"
-                    style="display: inline"
+                  <a
+                    href="{{ url_for('gastos.excluir_gasto', id=gasto[5]) }}"
+                    class="text-danger"
+                    title="Excluir"
+                    onclick="return confirm('Confirma a exclusão?');"
                   >
-                    <button
-                      type="submit"
-                      style="border: none; background: none"
-                      onclick="return confirm('Confirma a exclusão?');"
-                    >
-                      <i class="fas fa-trash-alt text-danger"></i>
-                    </button>
-                  </form>
+                    <i class="fas fa-trash-alt fa-sm"></i>
+                  </a>
                 </td>
               </tr>
               {% endfor %}
@@ -294,11 +279,6 @@
           </table>
         </div>
         <!-- Botões de Ação -->
-        <div
-          id="erro-container"
-          class="alert alert-danger"
-          style="display: none"
-        ></div>
         <div class="text-center mt-3">
           <button type="submit" class="btn btn-success">Pagar</button>
           <a href="/dashboard" class="btn btn-secondary">Voltar</a>
@@ -312,186 +292,124 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-                        document
-                          .getElementById("select_all")
-                          .addEventListener("click", function () {
-                            const checkboxes = document.querySelectorAll(".select-item");
-                            checkboxes.forEach((checkbox) => (checkbox.checked = this.checked));
-                          });
+      document
+        .getElementById("select_all")
+        .addEventListener("click", function () {
+          const checkboxes = document.querySelectorAll(".select-item");
+          checkboxes.forEach((checkbox) => (checkbox.checked = this.checked));
+        });
 
-                  #======================================= atualizar pagamento ==========================================================#
+      function atualizarPagamento(select, id, valorTotal) {
+        const input = document.getElementById(valor_pago_${id});
+        const errorDiv = document.getElementById(error_${id});
 
-                        function atualizarPagamento(select, id, valorTotal) {
-                          const input = document.getElementById(`valor_pago_${id}`);
-                          const errorDiv = document.getElementById(`error_${id}`);
-
-                          if (select.value === "total") {
-                            input.value = `R$ ${valorTotal.toFixed(2).replace(".", ",")}`;
-                            input.readOnly = true;
-                            errorDiv.style.display = "none";
-                          } else if (select.value === "parcial") {
-                            input.value = "";
-                            input.readOnly = false;
-                            errorDiv.style.display = "none";
-                            input.placeholder = "Digite o valor";
-                          } else {
-                            input.value = "";
-                            input.readOnly = true;
-                            errorDiv.style.display = "none";
-                          }
-                        }
-
-                  #======================================= atualizar status filtro ==========================================================#
-
-                        function atualizarStatusFiltro(status) {
-                          const statusSelecionado = document.getElementById("status-selecionado");
-                          const statusInput = document.getElementById("status");
-                          switch (status) {
-                            case "pago":
-                              statusSelecionado.innerText = "Pago";
-                              statusInput.value = "pago";
-                              break;
-                            case "parcial":
-                              statusSelecionado.innerText = "Parcial";
-                              statusInput.value = "parcial";
-                              break;
-                            case "pendente":
-                              statusSelecionado.innerText = "Pendente";
-                              statusInput.value = "pendente";
-                              break;
-                            default:
-                              statusSelecionado.innerText = "Todos";
-                              statusInput.value = "";
-                          }
-                        }
-
-                  #======================================= validar pagamento ==========================================================#
-      function validarPagamentos() {
-          let isValid = true;
-          let mensagensErro = [];
-          const erroContainer = document.getElementById("erro-container");
-
-          // Limpa mensagens anteriores
-          erroContainer.innerHTML = "";
-          erroContainer.style.display = "none";
-
-          let selecionouGasto = false;
-
-          document.querySelectorAll(".select-item").forEach((checkbox) => {
-              if (checkbox.checked) {
-                  selecionouGasto = true;
-
-                  const id = checkbox.value;
-                  const tipoPagamento = document.querySelector(`select[name="tipo_pagamento_${id}"]`).value;
-                  const saldoText = document.getElementById(`saldo_${id}`).innerText.replace("R$", "").replace(",", ".").trim();
-                  const saldo = parseFloat(saldoText);
-                  const statusCell = document.getElementById(`status_${id}`).innerText.trim();
-
-                  if (statusCell === "Pago") {
-                      mensagensErro.push(`O gasto ID ${id} já está pago.`);
-                      isValid = false;
-                  }
-
-                  if (saldo <= 0) {
-                      mensagensErro.push(`O saldo do gasto ID ${id} é zero.`);
-                      isValid = false;
-                  }
-
-                  if (tipoPagamento === "selecionar") {
-                      mensagensErro.push(`Escolha o tipo de pagamento para o gasto ID ${id}.`);
-                      isValid = false;
-                  }
-              }
-          });
-
-          if (!selecionouGasto) {
-              mensagensErro.push("Selecione pelo menos um gasto para pagar.");
-              isValid = false;
-          }
-
-          if (!isValid) {
-              erroContainer.style.display = "block";
-              mensagensErro.forEach((mensagem) => {
-                  const erroItem = document.createElement("p");
-                  erroItem.innerText = mensagem;
-                  erroContainer.appendChild(erroItem);
-              });
-          }
-
-          return isValid; // Só envia o formulário se tudo estiver correto
+        if (select.value === "total") {
+          input.value = R$ ${valorTotal.toFixed(2).replace(".", ",")};
+          input.readOnly = true;
+          errorDiv.style.display = "none";
+        } else if (select.value === "parcial") {
+          input.value = "";
+          input.readOnly = false;
+          errorDiv.style.display = "none";
+          input.placeholder = "Digite o valor";
+        } else {
+          input.value = "";
+          input.readOnly = true;
+          errorDiv.style.display = "none";
+        }
       }
 
-                  #======================================= toggleDiaInput ==========================================================#
+      function atualizarStatusFiltro(status) {
+        const statusSelecionado = document.getElementById("status-selecionado");
+        const statusInput = document.getElementById("status");
+        switch (status) {
+          case "pago":
+            statusSelecionado.innerText = "Pago";
+            statusInput.value = "pago";
+            break;
+          case "parcial":
+            statusSelecionado.innerText = "Parcial";
+            statusInput.value = "parcial";
+            break;
+          case "pendente":
+            statusSelecionado.innerText = "Pendente";
+            statusInput.value = "pendente";
+            break;
+          default:
+            statusSelecionado.innerText = "Todos";
+            statusInput.value = "";
+        }
+      }
 
-                        function toggleDiaInput(periodo) {
-                          const mesContainer = document.getElementById("mes-container");
-                          const diaContainer = document.getElementById("dia-container");
+      function validarPagamentos() {
+        let isValid = true;
 
-                          if (periodo === "dia") {
-                            mesContainer.style.display = "none";
-                            diaContainer.style.display = "block";
-                          } else {
-                            mesContainer.style.display = "block";
-                            diaContainer.style.display = "none";
-                          }
-                        }
+        document.querySelectorAll(".payment-cell select").forEach((select) => {
+          const id = select.name.split("_")[2];
+          const input = document.getElementById(valor_pago_${id});
+          const errorDiv = document.getElementById(error_${id});
 
-                  #======================================= ATUALIZAR PAGAMENTO 2 ==========================================================#
+          if (select.value === "parcial" && input.value.trim() === "") {
+            errorDiv.style.display = "block";
+            isValid = false;
+          }
+        });
 
-                        function atualizarPagamento(select, id, valorTotal, valorPago) {
-                          const input = document.getElementById(`valor_input_${id}`);
-                          const saldoCell = document.getElementById(`saldo_${id}`);
-                          const statusCell = document.getElementById(`status_${id}`);
+        return isValid;
+      }
 
-                          if (select.value === "total") {
-                            input.value = `R$ ${(valorTotal - valorPago)
-                              .toFixed(2)
-                              .replace(".", ",")}`;
-                            saldoCell.innerText = "R$ 0,00";
-                            statusCell.innerHTML = '<span class="status-paid">Pago</span>';
-                            input.readOnly = true;
-                          } else if (select.value === "parcial") {
-                            input.value = "";
-                            input.readOnly = false;
-                            input.placeholder = "Digite o valor";
-                            input.addEventListener("input", () => {
-                              const valorParcial =
-                                parseFloat(
-                                  input.value.replace("R$", "").replace(".", "").replace(",", ".")
-                                ) || 0;
-                              const saldo = valorTotal - (valorPago + valorParcial);
-                              saldoCell.innerText = `R$ ${saldo.toFixed(2).replace(".", ",")}`;
-                              if (saldo > 0) {
-                                statusCell.innerHTML =
-                                  '<span class="status-partial">Parcial</span>';
-                              } else {
-                                statusCell.innerHTML = '<span class="status-paid">Pago</span>';
-                              }
-                            });
-                          } else {
-                            input.value = "";
-                            saldoCell.innerText = `R$ ${(valorTotal - valorPago)
-                              .toFixed(2)
-                              .replace(".", ",")}`;
-                            input.readOnly = true;
-                            statusCell.innerHTML = '<span class="status-unpaid">Pendente</span>';
-                          }
-                        }
+      function toggleDiaInput(periodo) {
+        const mesContainer = document.getElementById("mes-container");
+        const diaContainer = document.getElementById("dia-container");
 
-                  #======================================= ATUALIZAR PAGAMENTO 2 ==========================================================#
+        if (periodo === "dia") {
+          mesContainer.style.display = "none";
+          diaContainer.style.display = "block";
+        } else {
+          mesContainer.style.display = "block";
+          diaContainer.style.display = "none";
+        }
+      }
 
-                        function toggleDiaInput(periodo) {
-                          const mesContainer = document.getElementById("mes-container");
-                          const diaContainer = document.getElementById("dia-container");
+      function atualizarPagamento(select, id, valorTotal, valorPago) {
+        const input = document.getElementById(valor_input_${id});
+        const saldoCell = document.getElementById(saldo_${id});
+        const statusCell = document.getElementById(status_${id});
 
-                          if (periodo === "dia") {
-                            mesContainer.style.display = "none";
-                            diaContainer.style.display = "block";
-                          } else {
-                            mesContainer.style.display = "block";
-                            diaContainer.style.display = "none";
-                          }
-                        }
+        if (select.value === "total") {
+          input.value = R$ ${(valorTotal - valorPago)
+            .toFixed(2)
+            .replace(".", ",")};
+          saldoCell.innerText = "R$ 0,00";
+          statusCell.innerHTML = '<span class="status-paid">Pago</span>';
+          input.readOnly = true;
+        } else if (select.value === "parcial") {
+          input.value = "";
+          input.readOnly = false;
+          input.placeholder = "Digite o valor";
+          input.addEventListener("input", () => {
+            const valorParcial =
+              parseFloat(
+                input.value.replace("R$", "").replace(".", "").replace(",", ".")
+              ) || 0;
+            const saldo = valorTotal - (valorPago + valorParcial);
+            saldoCell.innerText = R$ ${saldo.toFixed(2).replace(".", ",")};
+            if (saldo > 0) {
+              statusCell.innerHTML =
+                '<span class="status-partial">Parcial</span>';
+            } else {
+              statusCell.innerHTML = '<span class="status-paid">Pago</span>';
+            }
+          });
+        } else {
+          input.value = "";
+          saldoCell.innerText = R$ ${(valorTotal - valorPago)
+            .toFixed(2)
+            .replace(".", ",")};
+          input.readOnly = true;
+          statusCell.innerHTML = '<span class="status-unpaid">Pendente</span>';
+        }
+      }
     </script>
   </body>
 </html>

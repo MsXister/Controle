@@ -76,3 +76,41 @@ def excluir_gasto(id):
 
     flash('Gasto excluído com sucesso!', 'success')
     return redirect(url_for('todos_gastos'))
+  
+  
+  
+@gastos_bp.route('/pagar', methods=['POST'])
+def pagar_gastos():
+    conn = sqlite3.connect('usuarios.db')
+    cursor = conn.cursor()
+
+    gastos_selecionados = request.form.getlist('gastos_selecionados')
+    
+    if not gastos_selecionados:
+        flash('Nenhum gasto selecionado para pagamento.', 'danger')
+        return redirect(url_for('todos_gastos'))
+
+    for gasto_id in gastos_selecionados:
+        tipo_pagamento = request.form.get(f'tipo_pagamento_{gasto_id}')
+        valor_pago_input = request.form.get(f'valor_pago_{gasto_id}', '0').replace('R$', '').replace('.', '').replace(',', '.')
+
+        try:
+            valor_pago = float(valor_pago_input)
+        except ValueError:
+            flash(f'O valor inserido para o gasto ID {gasto_id} é inválido.', 'danger')
+            continue
+
+        if tipo_pagamento == 'total':
+            cursor.execute('UPDATE gastos SET pago = 1, valor_pago = valor WHERE id = ?', (gasto_id,))
+        elif tipo_pagamento == 'parcial':
+            cursor.execute('SELECT valor, valor_pago FROM gastos WHERE id = ?', (gasto_id,))
+            valor_total, valor_pago_atual = cursor.fetchone()
+            novo_valor_pago = valor_pago_atual + valor_pago
+
+            cursor.execute('UPDATE gastos SET valor_pago = ? WHERE id = ?', (novo_valor_pago, gasto_id))
+            cursor.execute('UPDATE gastos SET pago = CASE WHEN valor_pago >= valor THEN 1 ELSE 0 END WHERE id = ?', (gasto_id,))
+
+    conn.commit()
+    conn.close()
+    flash('Pagamentos processados!', 'success')
+    return redirect(url_for('todos_gastos'))

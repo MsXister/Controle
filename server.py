@@ -161,57 +161,51 @@ def logout():
 
 # ------------------------------------------- GASTO/PAGAR --------------------------------------------------------------
   
-@app.route('/gastos/pagar', methods=['POST'])
+@gastos_bp.route('/pagar', methods=['POST'])
 def pagar_gastos():
     conn = sqlite3.connect('usuarios.db')
     cursor = conn.cursor()
 
-    for gasto_id in request.form.getlist('gastos_selecionados'):
+    gastos_selecionados = request.form.getlist('gastos_selecionados')
+    
+    if not gastos_selecionados:
+        flash('Nenhum gasto selecionado para pagamento.', 'danger')
+        return redirect(url_for('todos_gastos'))
+
+    for gasto_id in gastos_selecionados:
         tipo_pagamento = request.form.get(f'tipo_pagamento_{gasto_id}')
         valor_pago_input = request.form.get(f'valor_pago_{gasto_id}', '0').replace('R$', '').replace('.', '').replace(',', '.')
 
         try:
             valor_pago = float(valor_pago_input)
-            if valor_pago <= 0:
-                raise ValueError("Valor pago deve ser maior que zero.")
         except ValueError:
-            flash(f'Valor inválido inserido para o gasto ID {gasto_id}. Por favor, corrija.', 'danger')
-            return redirect(url_for('todos_gastos'))
-
-        # Recupera valores atuais do gasto
-        cursor.execute('SELECT valor, valor_pago FROM gastos WHERE id = ?', (gasto_id,))
-        valor_total, valor_pago_atual = cursor.fetchone()
+            flash(f'O valor inserido para o gasto ID {gasto_id} é inválido.', 'danger')
+            continue
 
         if tipo_pagamento == 'total':
-            if valor_pago_atual < valor_total:
-                cursor.execute('UPDATE gastos SET valor_pago = valor, pago = 1 WHERE id = ?', (gasto_id,))
-            else:
-                flash(f'O gasto ID {gasto_id} já está totalmente pago.', 'info')
-
+            cursor.execute('UPDATE gastos SET pago = 1, valor_pago = valor WHERE id = ?', (gasto_id,))
         elif tipo_pagamento == 'parcial':
+            cursor.execute('SELECT valor, valor_pago FROM gastos WHERE id = ?', (gasto_id,))
+            valor_total, valor_pago_atual = cursor.fetchone()
             novo_valor_pago = valor_pago_atual + valor_pago
 
-            if novo_valor_pago > valor_total:
-                flash(f'O valor pago para o gasto ID {gasto_id} excede o total. Verifique o valor.', 'danger')
-                return redirect(url_for('todos_gastos'))
-
             cursor.execute('UPDATE gastos SET valor_pago = ? WHERE id = ?', (novo_valor_pago, gasto_id))
-            # Atualiza o status para pago se valor_total for atingido
             cursor.execute('UPDATE gastos SET pago = CASE WHEN valor_pago >= valor THEN 1 ELSE 0 END WHERE id = ?', (gasto_id,))
 
     conn.commit()
     conn.close()
-    flash('Pagamentos atualizados com sucesso!', 'success')
+    flash('Pagamentos processados!', 'success')
     return redirect(url_for('todos_gastos'))
+
 
 # ------------------------------------------- GASTO/PAGAR --------------------------------------------------------------
   
 # ------------------------------------------- EXCLUIR --------------------------------------------------------------
   
-@app.route('/gastos/excluir/<int:id>', methods=['GET', 'POST'])
-def excluir(id):
+@gastos_bp.route('/excluir/<int:id>', methods=['POST', 'GET'])
+def excluir_gasto(id):
     if 'username' not in session:
-        flash('Por favor, faça login para continuar.', 'warning')
+        flash('Por favor, faça login para excluir gastos.', 'warning')
         return redirect(url_for('login.login'))
 
     conn = sqlite3.connect('usuarios.db')
@@ -222,7 +216,8 @@ def excluir(id):
 
     flash('Gasto excluído com sucesso!', 'success')
     return redirect(url_for('todos_gastos'))
-# ------------------------------------------- EXCLUIR GASTO --------------------------------------------------------------
+
+# ------------------------------------------- EXCLUIR  --------------------------------------------------------------
 
 # ------------------------------------------- EDITAR GASTO --------------------------------------------------------------
   
