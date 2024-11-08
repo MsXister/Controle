@@ -75,8 +75,23 @@ def excluir_gasto(id):
     conn.close()
 
     flash('Gasto excluído com sucesso!', 'success')
+    return redirect(url_for('todos_gastos'))@gastos_bp.route('/excluir/<int:id>', methods=['POST'])
+def excluir_gasto(id):
+    if 'username' not in session:
+        flash('Por favor, faça login para excluir gastos.', 'warning')
+        return redirect(url_for('login.login'))
+
+    conn = sqlite3.connect('usuarios.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM gastos WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+
+    flash('Gasto excluído com sucesso!', 'success')
     return redirect(url_for('todos_gastos'))
-  
+
+
+
   
   
 @gastos_bp.route('/pagar', methods=['POST'])
