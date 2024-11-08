@@ -221,7 +221,7 @@
                   />
                 </td>
                 <td>{{ gasto[0] }}</td>
-                <td>{{ (gasto[1]|float - gasto[7]|float)|formatar_valor }}</td>
+                <td>{{ (gasto[1] - gasto[7]|float)|formatar_valor }}</td>
                 <td>{{ gasto[2]|formatar_data }}</td>
                 <td>{{ gasto[3] }}</td>
                 <td>
@@ -234,7 +234,7 @@
                   {% endif %}
                 </td>
                 <td>{{ gasto[7]|formatar_valor }}</td>
-                <td>{{ gasto[1] - gasto[7]|formatar_valor }}</td>
+                <td>{{ (gasto[1] - gasto[7]|float)|formatar_valor }}</td>
                 <td class="payment-cell">
                   <select
                     class="form-select"
@@ -251,7 +251,6 @@
                     name="valor_pago_{{ gasto[5] }}"
                     class="form-control"
                     placeholder="R$ 0,00"
-                    readonly
                   />
                   <div id="error_{{ gasto[5] }}" class="error-message">
                     Preencha o valor para pagamento parcial.

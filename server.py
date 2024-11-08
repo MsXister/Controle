@@ -48,6 +48,8 @@ def home():
         return redirect(url_for('dashboard'))
     return redirect(url_for('login.login'))
 
+# ------------------------------------------- dashboard --------------------------------------------------------------
+
 @app.route('/dashboard')
 def dashboard():
     if 'username' not in session:
@@ -85,6 +87,9 @@ def dashboard():
     return render_template('dashboard.html', username=session['username'], gastos_recentes=gastos_recentes, 
                            resumo_categorias=resumo_categorias, todos_gastos=todos_gastos, is_admin=is_admin)
 
+# ------------------------------------------- dashboard --------------------------------------------------------------
+
+# ------------------------------------------- TODOS OS GASTOS --------------------------------------------------------------
 @app.route('/todos_gastos', methods=['GET', 'POST'])
 def todos_gastos():
     if 'username' not in session:
@@ -111,12 +116,17 @@ def todos_gastos():
         JOIN usuarios u ON g.usuario_id = u.id
         WHERE strftime('%Y-%m', g.data) = ?
     ''', (mes_atual,))
-    todos_gastos = cursor.fetchall()
+    todos_gastos = [
+    (descricao, float(valor), data, categoria, username, id_gasto, pago, float(valor_pago))
+    for descricao, valor, data, categoria, username, id_gasto, pago, valor_pago in cursor.fetchall()
+    ]
     conn.close()
 
     return render_template('todos_gastos.html', mes_atual=mes_atual, todos_gastos=todos_gastos, year=datetime.now().year)
   
-  
+# ------------------------------------------- TODOS OS GASTOS --------------------------------------------------------------  
+
+# ------------------------------------------- LOGOUT --------------------------------------------------------------
   
 # Rota para logout com um endpoint definido corretamente
 @app.route('/logout', endpoint='logout')
@@ -127,6 +137,9 @@ def logout():
     flash('Você saiu da sua conta com sucesso.', 'success')
     return redirect(url_for('login.login'))
   
+# ------------------------------------------- LOGOUT --------------------------------------------------------------  
+
+# ------------------------------------------- GASTO/PAGAR --------------------------------------------------------------
   
 @app.route('/gastos/pagar', methods=['POST'])
 def pagar_gastos():
@@ -140,14 +153,20 @@ def pagar_gastos():
         try:
             valor_pago = float(valor_pago_input)
         except ValueError:
-            valor_pago = 0.0
+            flash(f'O valor inserido para o gasto {gasto_id} é inválido.', 'danger')
+            return redirect(url_for('todos_gastos'))
 
         if tipo_pagamento == 'total':
             # Marca o gasto como totalmente pago
             cursor.execute('UPDATE gastos SET pago = 1, valor_pago = valor WHERE id = ?', (gasto_id,))
         elif tipo_pagamento == 'parcial':
             # Atualiza o valor pago parcialmente
-            cursor.execute('UPDATE gastos SET valor_pago = valor_pago + ? WHERE id = ?', (valor_pago, gasto_id))
+            cursor.execute('SELECT valor, valor_pago FROM gastos WHERE id = ?', (gasto_id,))
+            valor_total, valor_pago_atual = cursor.fetchone()
+
+            novo_valor_pago = valor_pago_atual + valor_pago
+
+            cursor.execute('UPDATE gastos SET valor_pago = ? WHERE id = ?', (novo_valor_pago, gasto_id))
             # Atualiza o status para pago se o valor total já foi quitado
             cursor.execute('UPDATE gastos SET pago = CASE WHEN valor_pago >= valor THEN 1 ELSE 0 END WHERE id = ?', (gasto_id,))
 
@@ -155,9 +174,9 @@ def pagar_gastos():
     conn.close()
     flash('Pagamentos atualizados com sucesso!', 'success')
     return redirect(url_for('todos_gastos'))
-
+# ------------------------------------------- GASTO/PAGAR --------------------------------------------------------------
   
-  
+# ------------------------------------------- EXCLUIR --------------------------------------------------------------
   
 @app.route('/gastos/excluir/<int:id>', methods=['GET', 'POST'])
 def excluir(id):
@@ -173,7 +192,9 @@ def excluir(id):
 
     flash('Gasto excluído com sucesso!', 'success')
     return redirect(url_for('todos_gastos'))
+# ------------------------------------------- EXCLUIR GASTO --------------------------------------------------------------
 
+# ------------------------------------------- EDITAR GASTO --------------------------------------------------------------
   
 @app.route('/gastos/editar/<int:id>', methods=['GET', 'POST'])
 def editar(id):
@@ -206,7 +227,7 @@ def editar(id):
     conn.close()
 
     return render_template('editar_gasto.html', gasto=gasto, id=id)
-
+# ------------------------------------------- EDITAR GASTO --------------------------------------------------------------
 
 
 if __name__ == '__main__':
