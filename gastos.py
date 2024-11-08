@@ -3,6 +3,8 @@ import sqlite3
 
 gastos_bp = Blueprint('gastos', __name__)  # Definindo o Blueprint
 
+#========================================================= ADICIONAR =============================================================================
+
 @gastos_bp.route('/adicionar', methods=['GET', 'POST'])
 def adicionar_gasto():
     if 'username' not in session:
@@ -30,6 +32,7 @@ def adicionar_gasto():
 
     return render_template('adicionar_gasto.html')
   
+#========================================================= EDITAR =============================================================================
 
 @gastos_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 def editar_gasto(id):
@@ -60,7 +63,9 @@ def editar_gasto(id):
     conn.close()
 
     return render_template('editar_gasto.html', gasto=gasto)
-
+  
+  
+#========================================================= EXCLUIR =============================================================================
 
 @gastos_bp.route('/excluir/<int:id>', methods=['POST'])
 def excluir_gasto(id):
@@ -70,19 +75,16 @@ def excluir_gasto(id):
 
     conn = sqlite3.connect('usuarios.db')
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM gastos WHERE id = ?', (id,))
-    conn.commit()
-    conn.close()
 
-    flash('Gasto excluído com sucesso!', 'success')
-    return redirect(url_for('todos_gastos'))@gastos_bp.route('/excluir/<int:id>', methods=['POST'])
-def excluir_gasto(id):
-    if 'username' not in session:
-        flash('Por favor, faça login para excluir gastos.', 'warning')
-        return redirect(url_for('login.login'))
+    cursor.execute('SELECT * FROM gastos WHERE id = ?', (id,))
+    gasto = cursor.fetchone()
 
-    conn = sqlite3.connect('usuarios.db')
-    cursor = conn.cursor()
+    if not gasto:
+        flash(f'Gasto com ID {id} não encontrado.', 'danger')
+        conn.close()
+        return redirect(url_for('todos_gastos'))
+
+    # Continue com a exclusão
     cursor.execute('DELETE FROM gastos WHERE id = ?', (id,))
     conn.commit()
     conn.close()
@@ -92,7 +94,8 @@ def excluir_gasto(id):
 
 
 
-  
+
+#========================================================= PAGAR =============================================================================
   
 @gastos_bp.route('/pagar', methods=['POST'])
 def pagar_gastos():
