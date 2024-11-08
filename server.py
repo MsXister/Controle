@@ -95,14 +95,28 @@ def todos_gastos():
 
     conn = sqlite3.connect('usuarios.db')
     cursor = conn.cursor()
-    cursor.execute('''SELECT g.descricao, ROUND(g.valor, 2), g.data, g.categoria, u.username, g.id, g.pago, g.valor_pago
-                      FROM gastos g
-                      JOIN usuarios u ON g.usuario_id = u.id
-                      WHERE strftime('%Y-%m', g.data) = ?''', (mes_atual,))
+
+    # Garantir que valores nulos sejam tratados corretamente
+    cursor.execute('''
+        SELECT 
+            g.descricao, 
+            ROUND(g.valor, 2), 
+            g.data, 
+            g.categoria, 
+            u.username, 
+            g.id, 
+            g.pago, 
+            COALESCE(g.valor_pago, 0) -- Tratamento de nulos
+        FROM gastos g
+        JOIN usuarios u ON g.usuario_id = u.id
+        WHERE strftime('%Y-%m', g.data) = ?
+    ''', (mes_atual,))
     todos_gastos = cursor.fetchall()
     conn.close()
 
     return render_template('todos_gastos.html', mes_atual=mes_atual, todos_gastos=todos_gastos, year=datetime.now().year)
+  
+  
   
 # Rota para logout com um endpoint definido corretamente
 @app.route('/logout', endpoint='logout')
@@ -113,6 +127,7 @@ def logout():
     flash('Você saiu da sua conta com sucesso.', 'success')
     return redirect(url_for('login.login'))
   
+  
 @app.route('/gastos/pagar', methods=['POST'])
 def pagar_gastos():
     conn = sqlite3.connect('usuarios.db')
@@ -120,18 +135,29 @@ def pagar_gastos():
 
     for gasto_id in request.form.getlist('gastos_selecionados'):
         tipo_pagamento = request.form.get(f'tipo_pagamento_{gasto_id}')
-        valor_pago_input = request.form.get(f'valor_pago_input_{{gasto_id}}', '0').replace('R$', '').replace('.', '').replace(',', '.')
+        valor_pago_input = request.form.get(f'valor_pago_{gasto_id}', '0').replace('R$', '').replace('.', '').replace(',', '.')
+
+        try:
+            valor_pago = float(valor_pago_input)
+        except ValueError:
+            valor_pago = 0.0
 
         if tipo_pagamento == 'total':
+            # Marca o gasto como totalmente pago
             cursor.execute('UPDATE gastos SET pago = 1, valor_pago = valor WHERE id = ?', (gasto_id,))
         elif tipo_pagamento == 'parcial':
-            cursor.execute('UPDATE gastos SET valor_pago = valor_pago + ? WHERE id = ?', (valor_pago_input, gasto_id))
+            # Atualiza o valor pago parcialmente
+            cursor.execute('UPDATE gastos SET valor_pago = valor_pago + ? WHERE id = ?', (valor_pago, gasto_id))
+            # Atualiza o status para pago se o valor total já foi quitado
             cursor.execute('UPDATE gastos SET pago = CASE WHEN valor_pago >= valor THEN 1 ELSE 0 END WHERE id = ?', (gasto_id,))
 
     conn.commit()
     conn.close()
     flash('Pagamentos atualizados com sucesso!', 'success')
     return redirect(url_for('todos_gastos'))
+
+  
+  
   
 @app.route('/gastos/excluir/<int:id>', methods=['GET', 'POST'])
 def excluir(id):
