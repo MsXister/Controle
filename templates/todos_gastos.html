@@ -95,17 +95,22 @@
         margin-top: -10px;
         display: none;
       }
-      .btn-sm {
-        padding: 0.25rem 0.5rem;
+      .btn-sm-pagar {
+        padding: 0.25rem 0.25rem;
+        font-size: 0.8rem;
+      }
+      .btn-sm-voltar {
+        padding: 0.25rem 0.25rem;
         font-size: 0.8rem;
       }
       button.btn {
-        height: 40px; /* Altura do botão */
-        font-size: 14px; /* Tamanho do texto */
-        padding: 0 16px; /* Espaçamento interno horizontal */
-        line-height: 2; /* Altura da linha para centralizar o texto */
-        border-radius: 4px; /* Bordas arredondadas */
-      }
+    height: 40px; /* Altura do botão */
+    font-size: 14px; /* Tamanho do texto */
+    padding: 0 16px; /* Espaçamento interno horizontal */
+    line-height: 1; /* Altura da linha para centralizar o texto */
+    border-radius: 4px; /* Bordas arredondadas */
+}
+
     </style>
   </head>
   <body>
@@ -246,8 +251,8 @@
           </table>
         </div>
         <div class="text-center mt-3">
-          <button type="submit" class="btn btn-success btn-sm">Pagar</button>
-          <a href="/dashboard" class="btn btn-secondary btn-sm">Voltar</a>
+          <button type="submit" class="btn btn-success btn-sm-pagar">Pagar</button>
+          <a href="/dashboard" class="btn btn-secondary btn-sm-voltar">Voltar</a>
         </div>
       </form>
     </div>
