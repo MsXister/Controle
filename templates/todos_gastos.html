@@ -98,6 +98,14 @@
 <body>
   <div class="container">
     <h1>Todos os Gastos</h1>
+    <!-- Resumo no Topo -->
+    <div class="d-flex justify-content-between mb-3">
+      <div><strong>Total no Período:</strong> R$ {{ total_periodo }}</div>
+      <div><strong>Total Pago:</strong> R$ {{ total_pago }}</div>
+      <div><strong>Total Pendente:</strong> R$ {{ total_pendente }}</div>
+    </div>
+
+    <!-- Filtros -->
     <form id="filtro-form" method="get" action="/todos_gastos">
       <div class="filter-container">
         <div>
@@ -127,8 +135,9 @@
         <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
       </div>
     </form>
-    
-    <form method="post" action="/gastos/pagar" id="gastos-form" onsubmit="return validarPagamentos()">
+
+    <!-- Tabela de Gastos -->
+    <form method="post" action="/gastos/pagar" id="gastos-form">
       <div class="table-container">
         <table class="table table-hover">
           <thead>
@@ -147,10 +156,10 @@
           </thead>
           <tbody>
             {% for gasto in todos_gastos %}
-            <tr>
+            <tr class="table-{{ 'success' if gasto[6] else 'warning' if gasto[7] > 0 else 'danger' }}">
               <td><input type="checkbox" class="select-item" name="gastos_selecionados" value="{{ gasto[5] }}" /></td>
               <td>{{ gasto[0] }}</td>
-              <td>{{ (gasto[1] - gasto[7]|float)|formatar_valor }}</td>
+              <td>{{ gasto[1]|formatar_valor }}</td>
               <td>{{ gasto[2]|formatar_data }}</td>
               <td>{{ gasto[3] }}</td>
               <td>
@@ -165,15 +174,15 @@
               <td>{{ gasto[7]|formatar_valor }}</td>
               <td>{{ (gasto[1] - gasto[7]|float)|formatar_valor }}</td>
               <td class="payment-cell">
-                <select class="form-select" onchange="atualizarPagamento(this, {{ gasto[5] }}, {{ gasto[1] }}, {{ gasto[7] }})">
+                <select class="form-select" name="tipo_pagamento_{{ gasto[5] }}" onchange="atualizarPagamento(this, {{ gasto[5] }}, {{ gasto[1] }}, {{ gasto[7] }})">
                   <option value="selecionar">Selecionar</option>
                   <option value="total">Total</option>
                   <option value="parcial">Parcial</option>
                 </select>
-                <input type="text" id="valor_input_{{ gasto[5] }}" class="form-control" placeholder="R$ 0,00" readonly />
+                <input type="text" id="valor_input_{{ gasto[5] }}" class="form-control" name="valor_pago_{{ gasto[5] }}" placeholder="R$ 0,00" readonly />
               </td>
               <td class="action-icons">
-                <a href="{{ url_for('gastos.editar_gasto', id=gasto[5]) }}" class="text-warning me-2" title="Editar">
+                <a href="{{ url_for('gastos.editar_gasto', id=gasto[5]) }}" class="text-warning" title="Editar">
                   <i class="fas fa-edit fa-sm"></i>
                 </a>
                 <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Confirma a exclusão?');">
@@ -191,7 +200,7 @@
       </div>
     </form>
   </div>
-  
+
   <footer>
     <p>&copy; {{ year }} Controle de Gastos. Todos os direitos reservados.</p>
   </footer>
@@ -209,19 +218,6 @@
       const diaContainer = document.getElementById("dia-container");
       mesContainer.style.display = periodo === "dia" ? "none" : "block";
       diaContainer.style.display = periodo === "dia" ? "block" : "none";
-    }
-
-    function validarPagamentos() {
-      let isValid = true;
-      document.querySelectorAll(".payment-cell select").forEach(select => {
-        const id = select.parentNode.querySelector("input").id.split("_")[2];
-        const input = document.getElementById(`valor_input_${id}`);
-        if (select.value === "parcial" && !input.value.trim()) {
-          input.nextElementSibling.style.display = "block";
-          isValid = false;
-        }
-      });
-      return isValid;
     }
 
     function atualizarPagamento(select, id, valorTotal, valorPago) {
