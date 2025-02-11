@@ -310,8 +310,12 @@
           </table>
         </div>
         <div class="text-center mt-3">
-          <button class="btn-sm-pagar">Pagar</button>
-          <button class="btn-sm-voltar">Voltar</button>
+          <form action="{{ url_for('gastos.pagar_gastos') }}" method="post">
+            <button type="submit" class="btn btn-success btn-sm">Pagar</button>
+          </form>
+          <a href="{{ url_for('dashboard') }}" class="btn btn-danger btn-sm"
+            >Voltar</a
+          >
         </div>
       </form>
     </div>
