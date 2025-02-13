@@ -60,11 +60,33 @@
         align-items: center;
         white-space: nowrap; /* Impede quebra de linha */
       }
+      .action-icons {
+        display: flex;
+        gap: 5px;
+        justify-content: center;
+        align-items: center;
+        white-space: nowrap; /* Impede quebra de linha */
+      }
       .action-icons form {
-        display: inline-block; /* Mantém o botão no mesmo nível */
-        margin: 2;
+        display: inline-flex; /* Mantém o botão no mesmo nível */
+        margin: 0;
         padding: 0;
       }
+      .action-icons a,
+      .action-icons button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        border: none;
+        background: none;
+        padding: 5px;
+        cursor: pointer;
+      }
+      .action-icons i {
+        font-size: 16px;
+      }
+
       .action-icons button {
         border: none;
         background: none;
