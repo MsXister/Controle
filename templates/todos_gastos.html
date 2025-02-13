@@ -80,7 +80,7 @@
         padding: 5px;
         cursor: pointer;
         visibility: visible;
-         opacity: 1;
+        opacity: 1;
       }
 
       .action-icons button {
@@ -116,6 +116,22 @@
         display: flex;
         align-items: center;
         gap: 10px;
+      }
+      .btn-excluir {
+        display: inline-block !important; /* Garante que o botão fique visível */
+        visibility: visible !important;
+        opacity: 1 !important;
+        background-color: #dc3545 !important; /* Vermelho padrão do Bootstrap */
+        color: white !important;
+        border: none;
+        padding: 5px 8px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      .btn-excluir:hover {
+        background-color: #a71d2a !important; /* Cor mais escura ao passar o mouse */
       }
     </style>
   </head>
@@ -211,7 +227,8 @@
                   {% else %}
                   <span class="status-unpaid">Pendente</span>
                   {% endif %}
-                </td>A
+                </td>
+                A
                 <td>{{ gasto[7]|formatar_valor }}</td>
                 <td>{{ (gasto[1] - gasto[7]|float)|formatar_valor }}</td>
                 <td class="payment-cell">
@@ -248,10 +265,10 @@
                     >
                       <button
                         type="submit"
-                        class="btn btn-danger btn-sm"
+                        class="btn-excluir"
                         onclick="return confirm('Confirma a exclusão?');"
                       >
-                        <i class="fas fa-trash-alt text-white"></i>
+                        <i class="fas fa-trash-alt"></i>
                       </button>
                     </form>
                   </div>
@@ -274,4 +291,4 @@
       <p>&copy; {{ year }} Controle de Gastos. Todos os direitos reservados.</p>
     </footer>
   </body>
-</html> 
+</html>
