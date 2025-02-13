@@ -58,8 +58,9 @@ def editar_gasto(id):
         flash('Gasto atualizado com sucesso!', 'success')
         return redirect(url_for('todos_gastos'))
 
-    cursor.execute('SELECT * FROM gastos WHERE id = ?', (id,))
+    cursor.execute('SELECT id, descricao FROM gastos WHERE id = ?', (id,))
     gasto = cursor.fetchone()
+
     conn.close()
 
     return render_template('editar_gasto.html', gasto=gasto)
