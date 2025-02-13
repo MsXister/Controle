@@ -76,24 +76,23 @@ def excluir_gasto(id):
     conn = sqlite3.connect('usuarios.db')
     cursor = conn.cursor()
 
-    try:
-        cursor.execute('SELECT descricao FROM gastos WHERE id = ?', (id,))
-        gasto = cursor.fetchone()
+    # Certifique-se de que o gasto existe antes de excluir
+    cursor.execute('SELECT descricao, pago FROM gastos WHERE id = ?', (id,))
+    gasto = cursor.fetchone()
 
-        if not gasto:
-            flash('Gasto não encontrado.', 'danger')
-            return redirect(url_for('gastos.todos_gastos'))
+    if not gasto:
+        flash('Gasto não encontrado.', 'danger')
+        return redirect(url_for('todos_gastos'))
 
-        descricao = gasto[0]
-        cursor.execute('DELETE FROM gastos WHERE id = ?', (id,))
-        conn.commit()
-        flash(f'O gasto "{descricao}" foi excluído com sucesso!', 'success')
-    except Exception as e:
-        flash(f'Erro ao excluir o gasto: {str(e)}', 'danger')
-    finally:
-        conn.close()
+    # Permitir exclusão independentemente do status
+    descricao = gasto[0]
+    cursor.execute('DELETE FROM gastos WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
 
-    return redirect(url_for('gastos.todos_gastos'))
+    flash(f'O gasto "{descricao}" foi excluído com sucesso!', 'success')
+    return redirect(url_for('todos_gastos'))
+
 
 
 
