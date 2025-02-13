@@ -65,26 +65,19 @@
         gap: 5px;
         justify-content: center;
         align-items: center;
-        white-space: nowrap; /* Impede quebra de linha */
+        white-space: nowrap; /* Impede a quebra de linha */
       }
       .action-icons form {
-        display: inline-flex; /* Mantém o botão no mesmo nível */
+        display: inline-block; /* Mantém o botão no mesmo nível */
         margin: 0;
         padding: 0;
       }
-      .action-icons a,
-      .action-icons button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+      .action-icons a, .action-icons button {
+        display: inline-block;
         text-decoration: none;
         border: none;
-        background: none;
         padding: 5px;
         cursor: pointer;
-      }
-      .action-icons i {
-        font-size: 16px;
       }
 
       .action-icons button {
@@ -234,25 +227,31 @@
                     placeholder="R$ 0,00"
                   />
                 </td>
-                <td class="action-icons">
-                  <a
-                    href="{{ url_for('gastos.editar_gasto', id=gasto[5]) }}"
-                    class="text-warning"
-                    title="Editar"
-                  >
-                    <i class="fas fa-edit"></i>
-                  </a>
-                  <form
-                    action="{{ url_for('gastos.excluir_gasto', id=gasto[5]) }}"
-                    method="post"
-                  >
-                    <button
-                      type="submit"
-                      onclick="return confirm('Confirma a exclusão?');"
+                <td>
+                  <div class="action-icons">
+                    <!-- Botão Editar -->
+                    <a
+                      href="{{ url_for('gastos.editar_gasto', id=gasto[5]) }}"
+                      class="btn btn-warning btn-sm"
+                      title="Editar"
                     >
-                      <i class="fas fa-trash-alt text-danger"></i>
-                    </button>
-                  </form>
+                      <i class="fas fa-edit"></i>
+                    </a>
+
+                    <!-- Botão Excluir -->
+                    <form
+                      action="{{ url_for('gastos.excluir_gasto', id=gasto[5]) }}"
+                      method="post"
+                    >
+                      <button
+                        type="submit"
+                        class="btn btn-danger btn-sm"
+                        onclick="return confirm('Confirma a exclusão?');"
+                      >
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    </form>
+                  </div>
                 </td>
               </tr>
               {% endfor %}
