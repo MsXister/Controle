@@ -1,48 +1,41 @@
-import re
-from flask import Blueprint, request, redirect, url_for, render_template
-import hashlib
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 import sqlite3
+import re
+import hashlib                         # mantido para não remover linhas existentes
+from werkzeug.security import generate_password_hash  # novo import
 
-cadastro_bp = Blueprint('cadastro', __name__)
+cadastro_bp = Blueprint('cadastro', __name__, template_folder='templates')
 
-# Função para validar o formato do username
-def validar_username(username):
-    return re.match(r'^[a-zA-Z]+\.[a-zA-Z]+$', username)
 
-# Função para validar o formato da senha
-def validar_senha(senha):
-    return re.match(r'^(?=.*[A-Z])(?=.*[@$!%*?&])(?=.*[0-9]).{8,}$', senha)
-
-@cadastro_bp.route('/', methods=['GET', 'POST'])
+@cadastro_bp.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
 
-        # Validação do username
-        if not validar_username(username):
-            return "O nome de usuário deve estar no formato nome.sobrenome", 400
+        # validação de senha: 8+ caracteres, 1 maiúscula, 1 número, 1 caractere especial
+        regex = r'^(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$'
+        if not re.match(regex, password):
+            flash('Senha deve conter pelo menos 8 caracteres, 1 maiúscula, 1 número e 1 caractere especial.')
+            return redirect(url_for('cadastro.cadastro'))
 
-        # Validação da senha
-        if not validar_senha(password):
-            return "A senha deve ter pelo menos 1 letra maiúscula, 1 número, 1 caractere especial e 8 caracteres no total.", 400
-
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        # hashed_password = hashlib.sha256(password.encode()).hexdigest()  # linha antiga (apenas comentada)
+        hashed_password = generate_password_hash(password)               # linha nova compatível com login
 
         conn = sqlite3.connect('usuarios.db')
-        cursor = conn.cursor()
-
+        cur = conn.cursor()
         try:
-            cursor.execute('INSERT INTO usuarios (username, password) VALUES (?, ?)', (username, hashed_password))
+            cur.execute(
+                "INSERT INTO usuarios (username, password) VALUES (?, ?)",
+                (username, hashed_password)
+            )
             conn.commit()
+            flash('Usuário cadastrado com sucesso!')
+            return redirect(url_for('login.login'))
         except sqlite3.IntegrityError:
-            return "Usuário já existe! Tente outro nome.", 400
+            flash('Nome de usuário já existe.')
+            return redirect(url_for('cadastro.cadastro'))
         finally:
             conn.close()
 
-        return redirect(url_for('login.login'))
-
-    # Sempre retorna a página de cadastro para requisições GET
     return render_template('cadastro.html')
-  
-
