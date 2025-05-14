@@ -4,24 +4,19 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import generate_password_hash, check_password_hash
 from cadastro import cadastro_bp
 from login import login_bp
-import sqlite3
-from utils import verificar_ou_adicionar_colunas  # Importar a função
 from gastos import gastos_bp
+import sqlite3
+from utils import verificar_ou_adicionar_colunas
 from datetime import datetime
 
+# Carrega variáveis do .env
+load_dotenv()
 
-load_dotenv() 
+# Inicializa a aplicação Flask
 app = Flask(__name__)
-
-# Defina uma chave secreta para gerenciar as sessões
 app.secret_key = os.getenv("FLASK_SECRET_KEY", os.urandom(24))
 
-# Registro de blueprints
-app.register_blueprint(cadastro_bp)
-app.register_blueprint(login_bp)
-app.register_blueprint(gastos_bp)
-
-# Filtros personalizados
+# Filtros personalizados Jinja
 def formatar_valor(valor):
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
@@ -37,27 +32,25 @@ def formatar_data_mes(data):
     except ValueError:
         return data
 
-# Registrar os filtros no Jinja
 app.jinja_env.filters['formatar_valor'] = formatar_valor
 app.jinja_env.filters['formatar_data'] = formatar_data
 app.jinja_env.filters['formatar_data_mes'] = formatar_data_mes
 
-# Verificar colunas no banco de dados
+# Verificação inicial do banco
 verificar_ou_adicionar_colunas()
 
-# Registrar os blueprints
-app.register_blueprint(gastos_bp, url_prefix='/gastos')
+# Registro dos blueprints
 app.register_blueprint(cadastro_bp, url_prefix='/cadastro')
 app.register_blueprint(login_bp, url_prefix='/login')
+app.register_blueprint(gastos_bp, url_prefix='/gastos')
 
-# Rotas principais
+# ----------------- Rotas principais -----------------
+
 @app.route('/')
 def home():
     if 'username' in session:
         return redirect(url_for('dashboard'))
     return redirect(url_for('login.login'))
-
-# ------------------------------------------- dashboard --------------------------------------------------------------
 
 @app.route('/dashboard')
 def dashboard():
@@ -96,22 +89,17 @@ def dashboard():
     return render_template('dashboard.html', username=session['username'], gastos_recentes=gastos_recentes, 
                            resumo_categorias=resumo_categorias, todos_gastos=todos_gastos, is_admin=is_admin)
 
-# ------------------------------------------- dashboard --------------------------------------------------------------
-
-# ------------------------------------------- TODOS OS GASTOS --------------------------------------------------------------
 @app.route('/todos_gastos', methods=['GET', 'POST'])
 def todos_gastos():
     if 'username' not in session:
         flash('Por favor, faça login para acessar os gastos.', 'warning')
         return redirect(url_for('login.login'))
 
-    # Capturar os filtros do formulário
     periodo = request.args.get('periodo', 'mes')
     mes_atual = request.args.get('mes', datetime.now().strftime('%Y-%m'))
     dia_atual = request.args.get('dia', datetime.now().strftime('%Y-%m-%d'))
     status = request.args.get('status', '')
 
-    # Construir consulta condicional
     query = '''
         SELECT g.descricao, ROUND(g.valor, 2), g.data, g.categoria, u.username, g.id, g.pago, g.valor_pago
         FROM gastos g
@@ -152,24 +140,15 @@ def todos_gastos():
         year=datetime.now().year
     )
 
-  
-# ------------------------------------------- TODOS OS GASTOS --------------------------------------------------------------  
-
-# ------------------------------------------- LOGOUT --------------------------------------------------------------
-  
-# Rota para logout com um endpoint definido corretamente
 @app.route('/logout', endpoint='logout')
 def logout():
-    # Remove a sessão do usuário
     session.pop('username', None)
-    session.pop('is_admin', None)  # Remove também o status de admin
+    session.pop('is_admin', None)
     flash('Você saiu da sua conta com sucesso.', 'success')
     return redirect(url_for('login.login'))
-  
-# ------------------------------------------- LOGOUT --------------------------------------------------------------  
 
-# ------------------------------------------- GASTO/PAGAR --------------------------------------------------------------
-  
+# ----------------- Gasto/Pagar (rota via blueprint) -----------------
+
 @gastos_bp.route('/pagar', methods=['POST'])
 def pagar_gastos():
     conn = sqlite3.connect('usuarios.db')
@@ -206,6 +185,7 @@ def pagar_gastos():
     flash('Pagamentos processados!', 'success')
     return redirect(url_for('todos_gastos'))
 
+# ----------------- Execução -----------------
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)
