@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv  
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from cadastro import cadastro_bp
@@ -8,10 +10,16 @@ from gastos import gastos_bp
 from datetime import datetime
 
 
+load_dotenv() 
 app = Flask(__name__)
 
 # Defina uma chave secreta para gerenciar as sessões
-app.secret_key = 'uma_chave_secreta_segura'
+app.secret_key = os.getenv("FLASK_SECRET_KEY", os.urandom(24))
+
+# Registro de blueprints
+app.register_blueprint(cadastro_bp)
+app.register_blueprint(login_bp)
+app.register_blueprint(gastos_bp)
 
 # Filtros personalizados
 def formatar_valor(valor):
