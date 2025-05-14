@@ -198,20 +198,57 @@
       <!-- Tabela de Gastos -->
       <form method="post" action="/gastos/pagar">
         <div class="table-container">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>Descrição</th>
-                <th>Valor</th>
-                <th>Data</th>
-                <th>Categoria</th>
-                <th>Status</th>
-                <th>Valor Pago</th>
-                <th>Saldo</th>
-                <th>Pagamento</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
+<form method="POST" action="{{ url_for('gastos.pagar_gastos') }}">
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Selecionar</th>
+        <th>Descrição</th>
+        <th>Valor</th>
+        <th>Data</th>
+        <th>Categoria</th>
+        <th>Status</th>
+        <th>Valor Pago</th>
+        <th>Tipo Pagamento</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for gasto in todos_gastos %}
+      <tr>
+        <td>
+          <input type="checkbox" name="gastos_selecionados" value="{{ gasto[5] }}">
+        </td>
+        <td>{{ gasto[0] }}</td>
+        <td>{{ gasto[1]|formatar_valor }}</td>
+        <td>{{ gasto[2]|formatar_data }}</td>
+        <td>{{ gasto[3] }}</td>
+        <td>
+          {% if gasto[6] %}
+            <span class="status-paid">Pago</span>
+          {% elif gasto[7] > 0 %}
+            <span class="status-partial">Parcial</span>
+          {% else %}
+            <span class="status-unpaid">Pendente</span>
+          {% endif %}
+        </td>
+        <td>{{ gasto[7]|formatar_valor }}</td>
+        <td>
+          <select name="tipo_pagamento_{{ gasto[5] }}" class="form-control form-control-sm">
+            <option value="total">Total</option>
+            <option value="parcial">Parcial</option>
+          </select>
+          <input type="text" name="valor_pago_{{ gasto[5] }}" class="form-control form-control-sm mt-1" placeholder="R$ 0,00">
+        </td>
+        <td>
+          <a href="{{ url_for('gastos_bp.editar_gasto', id=gasto[5]) }}" class="btn btn-sm btn-primary">Editar</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <button type="submit" class="btn btn-success mt-3">Pagar Selecionados</button>
+</form>
             <tbody>
               {% for gasto in todos_gastos %}
               <tr>
