@@ -9,14 +9,18 @@ from utils import verificar_ou_adicionar_colunas
 from datetime import datetime
 import sqlite3
 
-# Carrega variáveis do .env
-load_dotenv()
+# =========================================================
+# 🔧 Configuração Inicial
+# =========================================================
 
-# Inicializa o app Flask
+load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", os.urandom(24))
 
-# Filtros personalizados Jinja2
+# =========================================================
+# 🧪 Filtros personalizados Jinja2
+# =========================================================
+
 def formatar_valor(valor):
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
@@ -32,20 +36,23 @@ def formatar_data_mes(data):
     except ValueError:
         return data
 
-# Registra os filtros
 app.jinja_env.filters['formatar_valor'] = formatar_valor
 app.jinja_env.filters['formatar_data'] = formatar_data
 app.jinja_env.filters['formatar_data_mes'] = formatar_data_mes
 
-# Verifica estrutura do banco
+# =========================================================
+# 🗃️ Banco e Blueprints
+# =========================================================
+
 verificar_ou_adicionar_colunas()
 
-# Registro dos blueprints
 app.register_blueprint(cadastro_bp, url_prefix='/cadastro')
 app.register_blueprint(login_bp, url_prefix='/login')
 app.register_blueprint(gastos_bp, url_prefix='/gastos')
 
-# -------------------- Rotas principais --------------------
+# =========================================================
+# 🌐 Rotas principais
+# =========================================================
 
 @app.route('/')
 def home():
@@ -147,14 +154,7 @@ def todos_gastos():
         year=datetime.now().year
     )
 
-@app.route('/logout', endpoint='logout')
-def logout():
-    session.pop('username', None)
-    session.pop('is_admin', None)
-    flash('Você saiu da sua conta com sucesso.', 'success')
-    return redirect(url_for('login.login'))
-  
-  @app.route('/ver_resumo')
+@app.route('/ver_resumo')
 def ver_resumo():
     if 'username' not in session:
         flash('Por favor, faça login para acessar o resumo.', 'warning')
@@ -162,7 +162,16 @@ def ver_resumo():
 
     return render_template('ver_resumo.html')
 
-# -------------------- Execução --------------------
+@app.route('/logout', endpoint='logout')
+def logout():
+    session.pop('username', None)
+    session.pop('is_admin', None)
+    flash('Você saiu da sua conta com sucesso.', 'success')
+    return redirect(url_for('login.login'))
+
+# =========================================================
+# ▶️ Execução
+# =========================================================
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)
