@@ -78,26 +78,34 @@ def excluir_gasto(id):
     cursor = conn.cursor()
 
     try:
-        cursor.execute('SELECT descricao FROM gastos WHERE id = ?', (id,))
+        # Verifica se o gasto existe e pertence ao usuário logado
+        cursor.execute('''
+            SELECT g.descricao 
+            FROM gastos g
+            JOIN usuarios u ON g.usuario_id = u.id
+            WHERE g.id = ? AND u.username = ?
+        ''', (id, session['username']))
         gasto = cursor.fetchone()
 
         if not gasto:
-            flash('Gasto não encontrado.', 'danger')
-            return redirect(url_for('gastos.todos_gastos'))
+            flash('Gasto não encontrado ou não pertence ao usuário logado.', 'danger')
+            return redirect(url_for('todos_gastos'))
 
         descricao = gasto[0]
+
+        # Executa exclusão
         cursor.execute('DELETE FROM gastos WHERE id = ?', (id,))
         conn.commit()
         flash(f'O gasto "{descricao}" foi excluído com sucesso!', 'success')
+
     except Exception as e:
         flash(f'Erro ao excluir o gasto: {str(e)}', 'danger')
+
     finally:
         conn.close()
 
-    return redirect(url_for('gastos.todos_gastos'))
-
-
-
+    return redirect(url_for('todos_gastos'))
+    print("🔴 EXCLUINDO GASTO ID:", id)
 
 
 #========================================================= PAGAR =============================================================================
