@@ -239,7 +239,8 @@
                   <td class="px-6 py-4 whitespace-nowrap">{{ gasto[3] }}</td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     {% if gasto[6] %}
-                    <span class="status-paid">Pago</span>
+                    <span class="status-paid">Pago</span></td>
+<td class="px-6 py-4 whitespace-nowrap">{{ (gasto[1] - gasto[7]) | formatar_valor }}
                     {% elif gasto[7] > 0 %}
                     <span class="status-partial">Parcial</span>
                     {% else %}
@@ -275,7 +276,8 @@
                         <i class="fas fa-edit text-xs"></i>
                         <span>Editar</span>
                       </a>
-                      <form
+                      </form>
+<form
                         action="{{ url_for('gastos.excluir_gasto', id=gasto[5]) }}"
                         method="post"
                       >
@@ -284,7 +286,7 @@
                           class="btn-excluir"
                           onclick="return confirm('Confirma a exclusão?');"
                         >
-                          <i class="fas fa-trash-alt"></i> Excluir
+                          Excluir
                         </button>
                       </form>
                     </div>
