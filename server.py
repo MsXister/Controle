@@ -153,6 +153,14 @@ def logout():
     session.pop('is_admin', None)
     flash('Você saiu da sua conta com sucesso.', 'success')
     return redirect(url_for('login.login'))
+  
+  @app.route('/ver_resumo')
+def ver_resumo():
+    if 'username' not in session:
+        flash('Por favor, faça login para acessar o resumo.', 'warning')
+        return redirect(url_for('login.login'))
+
+    return render_template('ver_resumo.html')
 
 # -------------------- Execução --------------------
 

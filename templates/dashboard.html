@@ -1,158 +1,202 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard - Controle de Gastos</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        body {
-            background-color: #f1f5f9;
-            font-family: "Roboto", sans-serif;
-        }
+      body {
+        background-color: #f1f5f9;
+        font-family: "Roboto", sans-serif;
+      }
 
-        .navbar {
-            margin-bottom: 20px;
-        }
+      .navbar {
+        margin-bottom: 20px;
+      }
 
-        .card {
-            transition: transform 0.2s ease;
-        }
+      .card {
+        transition: transform 0.2s ease;
+      }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
 
-        .content-header {
-            text-align: center;
-            margin-top: 20px;
-        }
+      .content-header {
+        text-align: center;
+        margin-top: 20px;
+      }
 
-        .section-title {
-            margin-top: 30px;
-            font-weight: bold;
-        }
+      .section-title {
+        margin-top: 30px;
+        font-weight: bold;
+      }
 
-        .indicator-card {
-            margin-bottom: 20px;
-            padding: 20px;
-            border-radius: 8px;
-            background-color: #fff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
+      .indicator-card {
+        margin-bottom: 20px;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
 
-        .indicator-card h5 {
-            font-size: 1.2rem;
-            font-weight: 500;
-            margin-bottom: 10px;
-        }
+      .indicator-card h5 {
+        font-size: 1.2rem;
+        font-weight: 500;
+        margin-bottom: 10px;
+      }
 
-        .indicator-value {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #007bff;
-        }
+      .indicator-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #007bff;
+      }
 
-        .logout-btn {
-            text-align: center;
-            margin-top: 10px;
-        }
+      .logout-btn {
+        text-align: center;
+        margin-top: 10px;
+      }
 
-        .action-buttons {
-            margin-top: 20px;
-            text-align: center;
-        }
+      .action-buttons {
+        margin-top: 20px;
+        text-align: center;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Navbar Superior -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Controle de Gastos</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Configurações</a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a href="/alterar_senha" class="dropdown-item">Alterar Senha</a></li>
-                            {% if is_admin %}
-                            <li><a href="/gerenciar_usuarios" class="dropdown-item">Gerenciar Usuários</a></li>
-                            {% endif %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a href="{{ url_for('logout') }}" class="dropdown-item">Sair</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">Controle de Gastos</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                >Configurações</a
+              >
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <a href="/alterar_senha" class="dropdown-item"
+                    >Alterar Senha</a
+                  >
+                </li>
+                {% if is_admin %}
+                <li>
+                  <a href="/gerenciar_usuarios" class="dropdown-item"
+                    >Gerenciar Usuários</a
+                  >
+                </li>
+                {% endif %}
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a href="{{ url_for('logout') }}" class="dropdown-item"
+                    >Sair</a
+                  >
+                </li>
+              </ul>
+            </li>
+          </ul>
         </div>
+      </div>
     </nav>
 
     <!-- Conteúdo Principal -->
     <div class="container">
-        <div class="content-header">
-            <h1>Bem-vindo, {{ username }}!</h1>
-            <p>Gerencie seus gastos e acompanhe seu progresso financeiro.</p>
+      <div class="content-header">
+        <h1>Bem-vindo, {{ username }}!</h1>
+        <p>Gerencie seus gastos e acompanhe seu progresso financeiro.</p>
+      </div>
+
+      <!-- Indicadores -->
+      <div class="row mt-4">
+        <div class="col-md-4">
+          <div class="indicator-card">
+            <h5>Total de Gastos no Mês</h5>
+            <p class="indicator-value">R$ {{ total_gastos_mes }}</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="indicator-card">
+            <h5>Total de Contas Fixas</h5>
+            <p class="indicator-value">R$ {{ total_contas_fixas }}</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="indicator-card">
+            <h5>Total no Cartão de Crédito</h5>
+            <p class="indicator-value">R$ {{ total_cartao_credito }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controle de Gastos -->
+      <h2 class="section-title">Controle de Gastos</h2>
+      <div class="row mt-4">
+        <div class="col-md-6">
+          <div class="card text-white bg-primary mb-3">
+            <div class="card-body text-center">
+              <h5 class="card-title">Monta Dashboard</h5>
+              <p class="card-text">
+                Visualize rapidamente seus gastos mensais.
+              </p>
+              <a
+                href="{{ url_for('ver_resumo') }}"
+                class="text-blue-600 hover:underline"
+              >
+                <i class="fas fa-chart-line"></i> Ver Resumo
+              </a>
+            </div>
+          </div>
         </div>
 
-        <!-- Indicadores -->
-        <div class="row mt-4">
-            <div class="col-md-4">
-                <div class="indicator-card">
-                    <h5>Total de Gastos no Mês</h5>
-                    <p class="indicator-value">R$ {{ total_gastos_mes }}</p>
-                </div>
+        <div class="col-md-6">
+          <div class="card text-white bg-success mb-3">
+            <div class="card-body text-center">
+              <h5 class="card-title">Adicionar Gastos</h5>
+              <p class="card-text">Registre novos gastos rapidamente.</p>
+              <a href="/gastos/adicionar" class="btn btn-light btn-sm"
+                >Adicionar</a
+              >
             </div>
-            <div class="col-md-4">
-                <div class="indicator-card">
-                    <h5>Total de Contas Fixas</h5>
-                    <p class="indicator-value">R$ {{ total_contas_fixas }}</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="indicator-card">
-                    <h5>Total no Cartão de Crédito</h5>
-                    <p class="indicator-value">R$ {{ total_cartao_credito }}</p>
-                </div>
-            </div>
+          </div>
         </div>
+      </div>
 
-        <!-- Controle de Gastos -->
-        <h2 class="section-title">Controle de Gastos</h2>
-        <div class="row mt-4">
-            <div class="col-md-6">
-                <div class="card text-white bg-primary mb-3">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Resumo de Gastos</h5>
-                        <p class="card-text">Visualize rapidamente seus gastos mensais.</p>
-                        <a href="/gastos/resumo" class="btn btn-light btn-sm">Ver Resumo</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="card text-white bg-success mb-3">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Adicionar Gastos</h5>
-                        <p class="card-text">Registre novos gastos rapidamente.</p>
-                        <a href="/gastos/adicionar" class="btn btn-light btn-sm">Adicionar</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Botão para Todos os Gastos -->
-        <div class="action-buttons">
-            <a href="/todos_gastos" class="btn btn-secondary btn-lg">Ver Todos os Gastos</a>
-        </div>
+      <!-- Botão para Todos os Gastos -->
+      <div class="action-buttons">
+        <a href="/todos_gastos" class="btn btn-secondary btn-lg"
+          >Ver Todos os Gastos</a
+        >
+      </div>
     </div>
 
     <!-- Scripts do Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+  </body>
 </html>
