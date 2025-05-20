@@ -3,112 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor BI - Personalizado</title>
+    <title>Editor BI - Dashboard Profissional</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .resizable {
-            resize: both;
-            overflow: hidden;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
         }
-        .draggable {
-            cursor: move;
+        
+        .navbar {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-        .visualization-placeholder {
-            background: repeating-linear-gradient(
-                45deg,
-                #f0f0f0,
-                #f0f0f0 10px,
-                #e0e0e0 10px,
-                #e0e0e0 20px
-            );
+        
+        .card {
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
         }
-        .sidebar {
-            transition: all 0.3s ease;
-        }
+        
         .visualization {
             transition: all 0.2s ease;
+            border-radius: 0.375rem;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
         }
+        
         .visualization:hover {
             box-shadow: 0 0 0 2px #3b82f6;
         }
-        .selected {
+        
+        .visualization.selected {
             box-shadow: 0 0 0 3px #3b82f6;
+            border-color: #3b82f6;
+        }
+        
+        .visualization-placeholder {
+            background: repeating-linear-gradient(
+                45deg,
+                #f8fafc,
+                #f8fafc 10px,
+                #f1f5f9 10px,
+                #f1f5f9 20px
+            );
+        }
+        
+        .resizable {
+            resize: both;
+            overflow: hidden;
+            min-width: 200px;
+            min-height: 150px;
+        }
+        
+        .draggable {
+            cursor: move;
+        }
+        
+        .sidebar-item {
+            transition: all 0.2s ease;
+            border-radius: 0.375rem;
+        }
+        
+        .sidebar-item:hover {
+            background-color: #f1f5f9;
+        }
+        
+        .btn-primary {
+            background-color: #3b82f6;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        
+        .btn-outline {
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-outline:hover {
+            background-color: #f1f5f9;
+        }
+        
+        .property-input {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            width: 100%;
+        }
+        
+        .property-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 1px #3b82f6;
+        }
+        
+        .color-swatch {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .color-swatch:hover {
+            transform: scale(1.1);
+        }
+        
+        .viz-handle {
+            background-color: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: move;
+            user-select: none;
+        }
+        
+        .viz-handle:hover {
+            background-color: #f1f5f9;
+        }
+        
+        .dropdown-menu {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-radius: 0.375rem;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .dropdown-item {
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f1f5f9;
         }
     </style>
 </head>
-<body class="bg-gray-100 h-screen flex flex-col overflow-hidden">
-    <!-- Top Navigation -->
-    <header class="bg-white shadow-sm">
-        <div class="flex items-center justify-between px-4 py-2">
+<body class="bg-gray-50">
+    <!-- Navbar Superior -->
+    <nav class="navbar bg-white px-6 py-3">
+        <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
-                <h1 class="text-xl font-bold text-blue-600">Editor BI</h1>
-                <button class="px-3 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100">
-                    <i class="fas fa-file mr-1"></i> Novo
-                </button>
-                <button class="px-3 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100">
-                    <i class="fas fa-save mr-1"></i> Salvar
-                </button>
-            </div>
-            <div class="flex items-center space-x-2">
-                <button class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    <i class="fas fa-database mr-1"></i> Conectar Dados
-                </button>
-                <button class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700">
-                    <i class="fas fa-play mr-1"></i> Atualizar
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <div class="flex flex-1 overflow-hidden">
-        <!-- Left Sidebar - Visualizations -->
-        <div class="sidebar bg-white w-64 shadow-md p-4 flex flex-col">
-            <h2 class="font-semibold text-gray-700 mb-4">Visualizações</h2>
-            <div class="space-y-2 flex-1 overflow-y-auto">
-                <div class="p-2 border border-dashed border-gray-300 rounded cursor-pointer hover:bg-blue-50" draggable="true" data-viz="table">
-                    <i class="fas fa-table text-blue-500 mr-2"></i> Tabela
+                <div class="flex items-center">
+                    <i class="fas fa-chart-line text-blue-600 text-xl mr-2"></i>
+                    <span class="text-lg font-semibold text-gray-800">Editor BI</span>
                 </div>
-                <div class="p-2 border border-dashed border-gray-300 rounded cursor-pointer hover:bg-blue-50" draggable="true" data-viz="bar">
-                    <i class="fas fa-chart-bar text-blue-500 mr-2"></i> Gráfico de Barras
-                </div>
-                <div class="p-2 border border-dashed border-gray-300 rounded cursor-pointer hover:bg-blue-50" draggable="true" data-viz="line">
-                    <i class="fas fa-chart-line text-blue-500 mr-2"></i> Gráfico de Linhas
-                </div>
-                <div class="p-2 border border-dashed border-gray-300 rounded cursor-pointer hover:bg-blue-50" draggable="true" data-viz="pie">
-                    <i class="fas fa-chart-pie text-blue-500 mr-2"></i> Gráfico de Pizza
-                </div>
-                <div class="p-2 border border-dashed border-gray-300 rounded cursor-pointer hover:bg-blue-50" draggable="true" data-viz="scatter">
-                    <i class="fas fa-chart-scatter text-blue-500 mr-2"></i> Gráfico de Dispersão
-                </div>
-                <div class="p-2 border border-dashed border-gray-300 rounded cursor-pointer hover:bg-blue-50" draggable="true" data-viz="map">
-                    <i class="fas fa-map text-blue-500 mr-2"></i> Mapa
-                </div>
-                <div class="p-2 border border-dashed border-gray-300 rounded cursor-pointer hover:bg-blue-50" draggable="true" data-viz="card">
-                    <i class="fas fa-id-card text-blue-500 mr-2"></i> Cartão
+                <div class="hidden md:flex items-center space-x-1">
+                    <button class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-file-alt mr-1"></i> Relatórios
+                    </button>
+                    <button class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-database mr-1"></i> Fontes de Dados
+                    </button>
+                    <button class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-users mr-1"></i> Compartilhamento
+                    </button>
                 </div>
             </div>
-            <div class="mt-4 pt-4 border-t border-gray-200">
-                <h2 class="font-semibold text-gray-700 mb-2">Campos</h2>
-                <div class="text-gray-500 text-sm">
-                    Conecte seus dados para ver os campos disponíveis
+            
+            <div class="flex items-center space-x-3">
+                <button onclick="window.history.back()" class="flex items-center px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md transition-colors">
+                    <i class="fas fa-arrow-left mr-1"></i> Voltar
+                </button>
+                
+                <div class="relative">
+                    <button id="user-menu-button" class="flex items-center space-x-2 focus:outline-none">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                            <i class="fas fa-user text-blue-600"></i>
+                        </div>
+                        <span class="hidden md:inline text-sm font-medium text-gray-700">Admin</span>
+                        <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
+                    </button>
+                    
+                    <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-user-cog mr-2 text-gray-500"></i> Configurações
+                        </a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-key mr-2 text-gray-500"></i> Alterar Senha
+                        </a>
+                        <div class="border-t border-gray-100"></div>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-sign-out-alt mr-2 text-gray-500"></i> Sair
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
+    </nav>
 
-        <!-- Main Canvas -->
-        <div class="flex-1 p-4 overflow-auto bg-gray-200">
-            <div id="canvas" class="bg-white w-full h-full min-h-[500px] relative visualization-placeholder">
-                <!-- Visualizations will be added here -->
+    <div class="container mx-auto px-4 py-6">
+        <!-- Top Toolbar -->
+        <div class="card mb-6">
+            <div class="p-4">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center space-x-2">
+                        <button class="flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-plus mr-2"></i> Novo Dashboard
+                        </button>
+                        <button class="flex items-center px-4 py-2 bg-white border border-gray-200 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-save mr-2"></i> Salvar
+                        </button>
+                        <button class="flex items-center px-4 py-2 bg-white border border-gray-200 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-share-alt mr-2"></i> Compartilhar
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <button class="flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors">
+                            <i class="fas fa-database mr-2"></i> Conectar Dados
+                        </button>
+                        <button class="flex items-center px-4 py-2 bg-cyan-600 text-white text-sm font-medium rounded-md hover:bg-cyan-700 transition-colors">
+                            <i class="fas fa-sync-alt mr-2"></i> Atualizar
+                        </button>
+                        <div class="relative">
+                            <button class="flex items-center px-4 py-2 bg-white border border-gray-200 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Right Sidebar - Properties -->
-        <div class="sidebar bg-white w-64 shadow-md p-4">
-            <h2 class="font-semibold text-gray-700 mb-4">Propriedades</h2>
-            <div id="properties-panel" class="space-y-4">
-                <div class="text-gray-500 text-sm">
-                    Selecione uma visualização para editar suas propriedades
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Left Sidebar - Visualizations -->
+            <div class="w-full lg:w-64 flex-shrink-0">
+                <div class="card">
+                    <div class="p-4 border-b border-gray-200">
+                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                            <i class="fas fa-chart-pie mr-2 text-blue-500"></i> Visualizações
+                        </h3>
+                    </div>
+                    <div class="p-3 space-y-2">
+                        <button draggable="true" data-viz="table" class="sidebar-item w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50">
+                            <i class="fas fa-table mr-3 text-blue-500"></i> Tabela
+                        </button>
+                        <button draggable="true" data-viz="bar" class="sidebar-item w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50">
+                            <i class="fas fa-chart-bar mr-3 text-blue-500"></i> Gráfico de Barras
+                        </button>
+                        <button draggable="true" data-viz="line" class="sidebar-item w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50">
+                            <i class="fas fa-chart-line mr-3 text-blue-500"></i> Gráfico de Linhas
+                        </button>
+                        <button draggable="true" data-viz="pie" class="sidebar-item w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50">
+                            <i class="fas fa-chart-pie mr-3 text-blue-500"></i> Gráfico de Pizza
+                        </button>
+                        <button draggable="true" data-viz="scatter" class="sidebar-item w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50">
+                            <i class="fas fa-chart-scatter mr-3 text-blue-500"></i> Gráfico de Dispersão
+                        </button>
+                        <button draggable="true" data-viz="map" class="sidebar-item w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50">
+                            <i class="fas fa-map mr-3 text-blue-500"></i> Mapa
+                        </button>
+                        <button draggable="true" data-viz="card" class="sidebar-item w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50">
+                            <i class="fas fa-id-card mr-3 text-blue-500"></i> Cartão
+                        </button>
+                    </div>
+                    
+                    <div class="p-4 border-t border-gray-200">
+                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                            <i class="fas fa-list mr-2 text-blue-500"></i> Campos
+                        </h3>
+                        <div class="text-xs text-gray-500">
+                            Conecte seus dados para ver os campos disponíveis
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Canvas -->
+            <div class="flex-1">
+                <div class="card h-full">
+                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                            <i class="fas fa-paint-brush mr-2 text-blue-500"></i> Canvas
+                        </h3>
+                        <div class="flex items-center space-x-2">
+                            <button class="text-xs text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button class="text-xs text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <button class="text-xs text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div id="canvas" class="bg-white w-full h-full min-h-[500px] visualization-placeholder relative rounded-md overflow-hidden">
+                            <!-- Visualizations will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar - Properties -->
+            <div class="w-full lg:w-80 flex-shrink-0">
+                <div class="card h-full">
+                    <div class="p-4 border-b border-gray-200">
+                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                            <i class="fas fa-sliders-h mr-2 text-blue-500"></i> Propriedades
+                        </h3>
+                    </div>
+                    <div class="p-4">
+                        <div id="properties-panel">
+                            <div class="text-center py-8 text-gray-400">
+                                <i class="fas fa-mouse-pointer text-3xl mb-2"></i>
+                                <p class="text-sm">Selecione uma visualização para editar suas propriedades</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -116,113 +322,167 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // User menu toggle
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+            
+            userMenuButton.addEventListener('click', function() {
+                userMenu.classList.toggle('hidden');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!userMenuButton.contains(e.target) && !userMenu.contains(e.target)) {
+                    userMenu.classList.add('hidden');
+                }
+            });
+            
+            // Canvas functionality
             const canvas = document.getElementById('canvas');
             const visualizationItems = document.querySelectorAll('[draggable="true"]');
             const propertiesPanel = document.getElementById('properties-panel');
             let selectedViz = null;
-
+            
             // Add drag events to visualization items
             visualizationItems.forEach(item => {
                 item.addEventListener('dragstart', function(e) {
                     e.dataTransfer.setData('text/plain', e.target.dataset.viz);
+                    e.dataTransfer.setData('source', 'sidebar');
                 });
             });
-
+            
             // Canvas drop zone
             canvas.addEventListener('dragover', function(e) {
                 e.preventDefault();
                 canvas.classList.add('bg-blue-50');
             });
-
+            
             canvas.addEventListener('dragleave', function() {
                 canvas.classList.remove('bg-blue-50');
             });
-
+            
             canvas.addEventListener('drop', function(e) {
                 e.preventDefault();
                 canvas.classList.remove('bg-blue-50');
                 
                 const vizType = e.dataTransfer.getData('text/plain');
-                const x = e.clientX - canvas.getBoundingClientRect().left;
-                const y = e.clientY - canvas.getBoundingClientRect().top;
+                const source = e.dataTransfer.getData('source');
                 
-                addVisualization(vizType, x, y);
+                // Only add new visualization if coming from sidebar
+                if (source === 'sidebar') {
+                    const x = e.clientX - canvas.getBoundingClientRect().left;
+                    const y = e.clientY - canvas.getBoundingClientRect().top;
+                    
+                    addVisualization(vizType, x, y);
+                }
             });
-
+            
             // Add a new visualization to the canvas
             function addVisualization(type, x, y) {
                 const vizId = 'viz-' + Date.now();
                 let vizContent = '';
                 
+                // Sample content for each visualization type
                 switch(type) {
                     case 'table':
                         vizContent = `
-                            <div class="p-2 text-center text-gray-500">
-                                <i class="fas fa-table text-3xl mb-2"></i>
-                                <div>Tabela</div>
+                            <div class="p-4 h-full flex flex-col">
+                                <div class="flex-1 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <i class="fas fa-table text-4xl text-gray-300 mb-2"></i>
+                                        <p class="text-sm text-gray-400">Tabela de Dados</p>
+                                    </div>
+                                </div>
                             </div>
                         `;
                         break;
                     case 'bar':
                         vizContent = `
-                            <div class="p-2 text-center text-gray-500">
-                                <i class="fas fa-chart-bar text-3xl mb-2"></i>
-                                <div>Gráfico de Barras</div>
+                            <div class="p-4 h-full flex flex-col">
+                                <div class="flex-1 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <i class="fas fa-chart-bar text-4xl text-gray-300 mb-2"></i>
+                                        <p class="text-sm text-gray-400">Gráfico de Barras</p>
+                                    </div>
+                                </div>
                             </div>
                         `;
                         break;
                     case 'line':
                         vizContent = `
-                            <div class="p-2 text-center text-gray-500">
-                                <i class="fas fa-chart-line text-3xl mb-2"></i>
-                                <div>Gráfico de Linhas</div>
+                            <div class="p-4 h-full flex flex-col">
+                                <div class="flex-1 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <i class="fas fa-chart-line text-4xl text-gray-300 mb-2"></i>
+                                        <p class="text-sm text-gray-400">Gráfico de Linhas</p>
+                                    </div>
+                                </div>
                             </div>
                         `;
                         break;
                     case 'pie':
                         vizContent = `
-                            <div class="p-2 text-center text-gray-500">
-                                <i class="fas fa-chart-pie text-3xl mb-2"></i>
-                                <div>Gráfico de Pizza</div>
+                            <div class="p-4 h-full flex flex-col">
+                                <div class="flex-1 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <i class="fas fa-chart-pie text-4xl text-gray-300 mb-2"></i>
+                                        <p class="text-sm text-gray-400">Gráfico de Pizza</p>
+                                    </div>
+                                </div>
                             </div>
                         `;
                         break;
                     case 'scatter':
                         vizContent = `
-                            <div class="p-2 text-center text-gray-500">
-                                <i class="fas fa-chart-scatter text-3xl mb-2"></i>
-                                <div>Gráfico de Dispersão</div>
+                            <div class="p-4 h-full flex flex-col">
+                                <div class="flex-1 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <i class="fas fa-chart-scatter text-4xl text-gray-300 mb-2"></i>
+                                        <p class="text-sm text-gray-400">Gráfico de Dispersão</p>
+                                    </div>
+                                </div>
                             </div>
                         `;
                         break;
                     case 'map':
                         vizContent = `
-                            <div class="p-2 text-center text-gray-500">
-                                <i class="fas fa-map text-3xl mb-2"></i>
-                                <div>Mapa</div>
+                            <div class="p-4 h-full flex flex-col">
+                                <div class="flex-1 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <i class="fas fa-map text-4xl text-gray-300 mb-2"></i>
+                                        <p class="text-sm text-gray-400">Mapa Geográfico</p>
+                                    </div>
+                                </div>
                             </div>
                         `;
                         break;
                     case 'card':
                         vizContent = `
-                            <div class="p-2 text-center text-gray-500">
-                                <i class="fas fa-id-card text-3xl mb-2"></i>
-                                <div>Cartão</div>
+                            <div class="p-4 h-full flex flex-col">
+                                <div class="flex-1 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <i class="fas fa-id-card text-4xl text-gray-300 mb-2"></i>
+                                        <p class="text-sm text-gray-400">Cartão de Métrica</p>
+                                    </div>
+                                </div>
                             </div>
                         `;
                         break;
                 }
                 
                 const vizElement = document.createElement('div');
-                vizElement.className = 'absolute bg-white border border-gray-300 rounded shadow-sm visualization draggable resizable w-48 h-32';
+                vizElement.className = 'absolute bg-white visualization draggable resizable w-64 h-48 shadow-sm';
                 vizElement.style.left = x + 'px';
                 vizElement.style.top = y + 'px';
                 vizElement.id = vizId;
                 vizElement.dataset.type = type;
                 vizElement.innerHTML = `
-                    <div class="handle bg-gray-100 p-1 text-xs text-gray-500 flex justify-between items-center cursor-move">
-                        <span>${type.charAt(0).toUpperCase() + type.slice(1)}</span>
-                        <button class="delete-viz text-red-500 hover:text-red-700">
+                    <div class="viz-handle flex items-center justify-between px-3 py-2 text-xs font-medium text-gray-500 rounded-t-md">
+                        <div class="flex items-center">
+                            <i class="${getIconForType(type)} mr-2 text-blue-500"></i>
+                            <span>${type.charAt(0).toUpperCase() + type.slice(1)}</span>
+                        </div>
+                        <button class="delete-viz text-gray-400 hover:text-red-500 transition-colors">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
@@ -235,7 +495,8 @@
                 makeDraggable(vizElement);
                 
                 // Add delete functionality
-                vizElement.querySelector('.delete-viz').addEventListener('click', function() {
+                vizElement.querySelector('.delete-viz').addEventListener('click', function(e) {
+                    e.stopPropagation();
                     if (selectedViz === vizElement) {
                         selectedViz = null;
                         showDefaultProperties();
@@ -259,11 +520,14 @@
                     // Show properties for this visualization
                     showVisualizationProperties(type);
                 });
+                
+                // Select the new visualization
+                vizElement.click();
             }
             
             // Make elements draggable
             function makeDraggable(element) {
-                const handle = element.querySelector('.handle');
+                const handle = element.querySelector('.viz-handle');
                 let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
                 
                 handle.onmousedown = dragMouseDown;
@@ -271,22 +535,29 @@
                 function dragMouseDown(e) {
                     e = e || window.event;
                     e.preventDefault();
+                    
                     // Get the mouse cursor position at startup
                     pos3 = e.clientX;
                     pos4 = e.clientY;
+                    
+                    // Set data for drag operation
+                    e.dataTransfer.setData('text/plain', element.dataset.type);
+                    e.dataTransfer.setData('source', 'canvas');
+                    
                     document.onmouseup = closeDragElement;
-                    // Call a function whenever the cursor moves
                     document.onmousemove = elementDrag;
                 }
                 
                 function elementDrag(e) {
                     e = e || window.event;
                     e.preventDefault();
+                    
                     // Calculate the new cursor position
                     pos1 = pos3 - e.clientX;
                     pos2 = pos4 - e.clientY;
                     pos3 = e.clientX;
                     pos4 = e.clientY;
+                    
                     // Set the element's new position
                     element.style.top = (element.offsetTop - pos2) + "px";
                     element.style.left = (element.offsetLeft - pos1) + "px";
@@ -306,25 +577,35 @@
                 switch(type) {
                     case 'table':
                         propertiesHTML = `
-                            <div>
-                                <h3 class="font-medium text-gray-700 mb-2">Tabela</h3>
-                                <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                                        <input type="text" class="w-full px-2 py-1 border border-gray-300 rounded">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                                    <input type="text" class="property-input" placeholder="Tabela de Vendas">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Colunas</label>
+                                    <div class="text-xs text-gray-500 mb-2">Arraste campos para exibir na tabela</div>
+                                    <div class="border border-dashed border-gray-300 rounded-md p-3 text-center text-xs text-gray-500">
+                                        Nenhum campo selecionado
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Colunas</label>
-                                        <div class="text-gray-500 text-sm">Conecte seus dados para ver as colunas</div>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Estilo</label>
-                                        <select class="w-full px-2 py-1 border border-gray-300 rounded">
-                                            <option>Padrão</option>
-                                            <option>Minimalista</option>
-                                            <option>Condensado</option>
-                                        </select>
-                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Estilo</label>
+                                    <select class="property-input">
+                                        <option>Padrão</option>
+                                        <option>Condensado</option>
+                                        <option>Listrado</option>
+                                        <option>Minimalista</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="pt-2 border-t border-gray-200">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" class="rounded text-blue-600">
+                                        <span class="text-sm text-gray-700">Mostrar totais</span>
+                                    </label>
                                 </div>
                             </div>
                         `;
@@ -332,87 +613,134 @@
                     case 'bar':
                     case 'line':
                         propertiesHTML = `
-                            <div>
-                                <h3 class="font-medium text-gray-700 mb-2">${type === 'bar' ? 'Gráfico de Barras' : 'Gráfico de Linhas'}</h3>
-                                <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                                        <input type="text" class="w-full px-2 py-1 border border-gray-300 rounded">
-                                    </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                                    <input type="text" class="property-input" placeholder="${type === 'bar' ? 'Gráfico de Barras' : 'Gráfico de Linhas'}">
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Eixo X</label>
-                                        <div class="text-gray-500 text-sm">Conecte seus dados para configurar</div>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Eixo Y</label>
-                                        <div class="text-gray-500 text-sm">Conecte seus dados para configurar</div>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Legenda</label>
-                                        <select class="w-full px-2 py-1 border border-gray-300 rounded">
-                                            <option>Mostrar</option>
-                                            <option>Ocultar</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Cores</label>
-                                        <div class="flex space-x-2">
-                                            <div class="w-6 h-6 bg-blue-500 rounded cursor-pointer"></div>
-                                            <div class="w-6 h-6 bg-red-500 rounded cursor-pointer"></div>
-                                            <div class="w-6 h-6 bg-green-500 rounded cursor-pointer"></div>
-                                            <div class="w-6 h-6 bg-yellow-500 rounded cursor-pointer"></div>
-                                            <div class="w-6 h-6 bg-purple-500 rounded cursor-pointer"></div>
+                                        <div class="text-xs text-gray-500 mb-2">Arraste um campo categórico</div>
+                                        <div class="border border-dashed border-gray-300 rounded-md p-2 text-center text-xs text-gray-500">
+                                            Nenhum campo selecionado
                                         </div>
                                     </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Eixo Y</label>
+                                        <div class="text-xs text-gray-500 mb-2">Arraste um campo numérico</div>
+                                        <div class="border border-dashed border-gray-300 rounded-md p-2 text-center text-xs text-gray-500">
+                                            Nenhum campo selecionado
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Agrupamento</label>
+                                    <div class="text-xs text-gray-500 mb-2">Arraste um campo para agrupar</div>
+                                    <div class="border border-dashed border-gray-300 rounded-md p-2 text-center text-xs text-gray-500">
+                                        Nenhum campo selecionado
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Cores</label>
+                                    <div class="flex space-x-2">
+                                        <div class="color-swatch bg-blue-500"></div>
+                                        <div class="color-swatch bg-red-500"></div>
+                                        <div class="color-swatch bg-green-500"></div>
+                                        <div class="color-swatch bg-yellow-500"></div>
+                                        <div class="color-swatch bg-purple-500"></div>
+                                        <div class="color-swatch bg-pink-500"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="pt-2 border-t border-gray-200 space-y-2">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" class="rounded text-blue-600" checked>
+                                        <span class="text-sm text-gray-700">Mostrar legenda</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" class="rounded text-blue-600">
+                                        <span class="text-sm text-gray-700">Mostrar valores</span>
+                                    </label>
                                 </div>
                             </div>
                         `;
                         break;
                     case 'pie':
                         propertiesHTML = `
-                            <div>
-                                <h3 class="font-medium text-gray-700 mb-2">Gráfico de Pizza</h3>
-                                <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                                        <input type="text" class="w-full px-2 py-1 border border-gray-300 rounded">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Valores</label>
-                                        <div class="text-gray-500 text-sm">Conecte seus dados para configurar</div>
-                                    </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                                    <input type="text" class="property-input" placeholder="Gráfico de Pizza">
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Categorias</label>
-                                        <div class="text-gray-500 text-sm">Conecte seus dados para configurar</div>
+                                        <div class="text-xs text-gray-500 mb-2">Arraste um campo categórico</div>
+                                        <div class="border border-dashed border-gray-300 rounded-md p-2 text-center text-xs text-gray-500">
+                                            Nenhum campo selecionado
+                                        </div>
                                     </div>
+                                    
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Mostrar porcentagens</label>
-                                        <input type="checkbox" class="mr-2" checked>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Valores</label>
+                                        <div class="text-xs text-gray-500 mb-2">Arraste um campo numérico</div>
+                                        <div class="border border-dashed border-gray-300 rounded-md p-2 text-center text-xs text-gray-500">
+                                            Nenhum campo selecionado
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Paleta de cores</label>
-                                        <select class="w-full px-2 py-1 border border-gray-300 rounded">
-                                            <option>Padrão</option>
-                                            <option>Pastel</option>
-                                            <option>Vibrante</option>
-                                        </select>
-                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Paleta de Cores</label>
+                                    <select class="property-input">
+                                        <option>Padrão</option>
+                                        <option>Pastel</option>
+                                        <option>Vibrante</option>
+                                        <option>Escala de Cinza</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="pt-2 border-t border-gray-200 space-y-2">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" class="rounded text-blue-600" checked>
+                                        <span class="text-sm text-gray-700">Mostrar porcentagens</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" class="rounded text-blue-600">
+                                        <span class="text-sm text-gray-700">Mostrar valores absolutos</span>
+                                    </label>
                                 </div>
                             </div>
                         `;
                         break;
                     default:
                         propertiesHTML = `
-                            <div>
-                                <h3 class="font-medium text-gray-700 mb-2">${type.charAt(0).toUpperCase() + type.slice(1)}</h3>
-                                <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                                        <input type="text" class="w-full px-2 py-1 border border-gray-300 rounded">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                                    <input type="text" class="property-input" placeholder="${type.charAt(0).toUpperCase() + type.slice(1)}">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Configurações</label>
+                                    <div class="text-xs text-gray-500 mb-2">Conecte seus dados para configurar esta visualização</div>
+                                    <div class="border border-dashed border-gray-300 rounded-md p-4 text-center">
+                                        <i class="fas fa-database text-2xl text-gray-300 mb-2"></i>
+                                        <p class="text-xs text-gray-500">Nenhuma fonte de dados conectada</p>
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Configurações</label>
-                                        <div class="text-gray-500 text-sm">Conecte seus dados para configurar esta visualização</div>
+                                </div>
+                                
+                                <div class="pt-2 border-t border-gray-200">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tamanho</label>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <input type="number" class="property-input" placeholder="Largura" value="250">
+                                        <input type="number" class="property-input" placeholder="Altura" value="200">
                                     </div>
                                 </div>
                             </div>
@@ -420,13 +748,37 @@
                 }
                 
                 propertiesPanel.innerHTML = propertiesHTML;
+                
+                // Add event listeners to property inputs
+                document.querySelectorAll('.property-input').forEach(input => {
+                    input.addEventListener('change', function() {
+                        if (selectedViz) {
+                            // Update visualization based on property changes
+                            // This would be more complex in a real application
+                        }
+                    });
+                });
+            }
+            
+            function getIconForType(type) {
+                const icons = {
+                    'table': 'fas fa-table',
+                    'bar': 'fas fa-chart-bar',
+                    'line': 'fas fa-chart-line',
+                    'pie': 'fas fa-chart-pie',
+                    'scatter': 'fas fa-chart-scatter',
+                    'map': 'fas fa-map',
+                    'card': 'fas fa-id-card'
+                };
+                return icons[type] || 'fas fa-chart-area';
             }
             
             // Show default properties panel
             function showDefaultProperties() {
                 propertiesPanel.innerHTML = `
-                    <div class="text-gray-500 text-sm">
-                        Selecione uma visualização para editar suas propriedades
+                    <div class="text-center py-8 text-gray-400">
+                        <i class="fas fa-mouse-pointer text-3xl mb-2"></i>
+                        <p class="text-sm">Selecione uma visualização para editar suas propriedades</p>
                     </div>
                 `;
             }
@@ -442,12 +794,12 @@
                 }
             });
             
-            // Sample visualizations on load
+            // Add sample visualizations on load
             setTimeout(() => {
                 addVisualization('bar', 50, 50);
-                addVisualization('pie', 250, 50);
-                addVisualization('table', 50, 200);
-            }, 100);
+                addVisualization('pie', 300, 50);
+                addVisualization('table', 50, 250);
+            }, 500);
         });
     </script>
 </body>

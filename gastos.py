@@ -70,42 +70,50 @@ def editar_gasto(id):
 
 @gastos_bp.route('/excluir/<int:id>', methods=['POST'])
 def excluir_gasto(id):
+    print(f"🔴 Requisição de exclusão recebida para ID: {id}")
+
     if 'username' not in session:
-        flash('Por favor, faça login para excluir gastos.', 'warning')
+        flash('Faça login para continuar.', 'warning')
+        print("⚠️ Sessão não encontrada.")
         return redirect(url_for('login.login'))
+
+    username = session['username']
+    print(f"🔍 Usuário logado: {username}")
 
     conn = sqlite3.connect('usuarios.db')
     cursor = conn.cursor()
 
     try:
-        # Verifica se o gasto existe e pertence ao usuário logado
         cursor.execute('''
             SELECT g.descricao 
             FROM gastos g
             JOIN usuarios u ON g.usuario_id = u.id
             WHERE g.id = ? AND u.username = ?
-        ''', (id, session['username']))
+        ''', (id, username))
         gasto = cursor.fetchone()
 
         if not gasto:
-            flash('Gasto não encontrado ou não pertence ao usuário logado.', 'danger')
+            flash('Gasto não encontrado ou não pertence a você.', 'danger')
+            print("❌ Gasto não pertence ao usuário.")
             return redirect(url_for('todos_gastos'))
 
         descricao = gasto[0]
 
-        # Executa exclusão
         cursor.execute('DELETE FROM gastos WHERE id = ?', (id,))
         conn.commit()
+
+        print(f"✅ Gasto excluído: {descricao}")
         flash(f'O gasto "{descricao}" foi excluído com sucesso!', 'success')
 
     except Exception as e:
-        flash(f'Erro ao excluir o gasto: {str(e)}', 'danger')
+        print("🔥 Erro ao excluir:", e)
+        flash(f'Erro ao excluir gasto: {str(e)}', 'danger')
 
     finally:
         conn.close()
 
     return redirect(url_for('todos_gastos'))
-    print("🔴 EXCLUINDO GASTO ID:", id)
+
 
 
 #========================================================= PAGAR =============================================================================
