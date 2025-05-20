@@ -1,22 +1,22 @@
 import os
-from dotenv import load_dotenv  
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from cadastro import cadastro_bp
 from login import login_bp
 from gastos import gastos_bp
-import sqlite3
 from utils import verificar_ou_adicionar_colunas
 from datetime import datetime
+import sqlite3
 
 # Carrega variáveis do .env
 load_dotenv()
 
-# Inicializa a aplicação Flask
+# Inicializa o app Flask
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", os.urandom(24))
 
-# Filtros personalizados Jinja
+# Filtros personalizados Jinja2
 def formatar_valor(valor):
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
@@ -32,11 +32,12 @@ def formatar_data_mes(data):
     except ValueError:
         return data
 
+# Registra os filtros
 app.jinja_env.filters['formatar_valor'] = formatar_valor
 app.jinja_env.filters['formatar_data'] = formatar_data
 app.jinja_env.filters['formatar_data_mes'] = formatar_data_mes
 
-# Verificação inicial do banco
+# Verifica estrutura do banco
 verificar_ou_adicionar_colunas()
 
 # Registro dos blueprints
@@ -44,7 +45,7 @@ app.register_blueprint(cadastro_bp, url_prefix='/cadastro')
 app.register_blueprint(login_bp, url_prefix='/login')
 app.register_blueprint(gastos_bp, url_prefix='/gastos')
 
-# ----------------- Rotas principais -----------------
+# -------------------- Rotas principais --------------------
 
 @app.route('/')
 def home():
@@ -86,8 +87,14 @@ def dashboard():
         gastos_recentes, resumo_categorias, todos_gastos, is_admin = [], [], [], False
 
     conn.close()
-    return render_template('dashboard.html', username=session['username'], gastos_recentes=gastos_recentes, 
-                           resumo_categorias=resumo_categorias, todos_gastos=todos_gastos, is_admin=is_admin)
+    return render_template(
+        'dashboard.html',
+        username=session['username'],
+        gastos_recentes=gastos_recentes,
+        resumo_categorias=resumo_categorias,
+        todos_gastos=todos_gastos,
+        is_admin=is_admin
+    )
 
 @app.route('/todos_gastos', methods=['GET', 'POST'])
 def todos_gastos():
@@ -147,45 +154,7 @@ def logout():
     flash('Você saiu da sua conta com sucesso.', 'success')
     return redirect(url_for('login.login'))
 
-# ----------------- Gasto/Pagar (rota via blueprint) -----------------
-
-@gastos_bp.route('/pagar', methods=['POST'])
-def pagar_gastos():
-    conn = sqlite3.connect('usuarios.db')
-    cursor = conn.cursor()
-
-    gastos_selecionados = request.form.getlist('gastos_selecionados')
-    
-    if not gastos_selecionados:
-        flash('Nenhum gasto selecionado para pagamento.', 'danger')
-        return redirect(url_for('todos_gastos'))
-
-    for gasto_id in gastos_selecionados:
-        tipo_pagamento = request.form.get(f'tipo_pagamento_{gasto_id}')
-        valor_pago_input = request.form.get(f'valor_pago_{gasto_id}', '0').replace('R$', '').replace('.', '').replace(',', '.')
-
-        try:
-            valor_pago = float(valor_pago_input)
-        except ValueError:
-            flash(f'O valor inserido para o gasto ID {gasto_id} é inválido.', 'danger')
-            continue
-
-        if tipo_pagamento == 'total':
-            cursor.execute('UPDATE gastos SET pago = 1, valor_pago = valor WHERE id = ?', (gasto_id,))
-        elif tipo_pagamento == 'parcial':
-            cursor.execute('SELECT valor, valor_pago FROM gastos WHERE id = ?', (gasto_id,))
-            valor_total, valor_pago_atual = cursor.fetchone()
-            novo_valor_pago = valor_pago_atual + valor_pago
-
-            cursor.execute('UPDATE gastos SET valor_pago = ? WHERE id = ?', (novo_valor_pago, gasto_id))
-            cursor.execute('UPDATE gastos SET pago = CASE WHEN valor_pago >= valor THEN 1 ELSE 0 END WHERE id = ?', (gasto_id,))
-
-    conn.commit()
-    conn.close()
-    flash('Pagamentos processados!', 'success')
-    return redirect(url_for('todos_gastos'))
-
-# ----------------- Execução -----------------
+# -------------------- Execução --------------------
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)
