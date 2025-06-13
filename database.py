@@ -15,25 +15,28 @@ def init_db():
     ''')
 
     # Criação da tabela de gastos
-  cursor.execute('''
-    CREATE TABLE IF NOT EXISTS gastos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        descricao TEXT NOT NULL,
-        valor REAL NOT NULL,
-        data TEXT NOT NULL,
-        categoria TEXT NOT NULL,
-        usuario_id INTEGER NOT NULL,
-        pago BOOLEAN DEFAULT 0,
-        valor_pago REAL DEFAULT 0, -- Adiciona esta linha se não existir
-        FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-    )
-''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS gastos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            descricao TEXT NOT NULL,
+            valor REAL NOT NULL,
+            data TEXT NOT NULL,
+            categoria TEXT NOT NULL,
+            usuario_id INTEGER NOT NULL,
+            pago BOOLEAN DEFAULT 0,
+            valor_pago REAL DEFAULT 0, -- Adiciona esta linha se não existir
+            FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+        )
+    ''')
 
     # Adicionar usuário admin padrão (opcional)
-    cursor.execute('''
-        INSERT OR IGNORE INTO usuarios (username, password, is_admin)
-        VALUES ('admin', 'admin123', 1)
-    ''')
+    from werkzeug.security import generate_password_hash
+    hashed_admin_password = generate_password_hash('admin123')
+    cursor.execute(
+        '''INSERT OR IGNORE INTO usuarios (username, password, is_admin)
+           VALUES (?, ?, 1)''',
+        ('admin', hashed_admin_password)
+    )
 
     conn.commit()
     conn.close()
